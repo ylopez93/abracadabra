@@ -34,4 +34,11 @@ Route::group([
     Route::post('refresh', 'JWTAuthController@refresh');
     Route::get('profile', 'JWTAuthController@profile');
 
+
 });
+
+Route::resource('product','api\ProductController')->only([
+    'index','show'
+])->middleware('CORS');
+
+
