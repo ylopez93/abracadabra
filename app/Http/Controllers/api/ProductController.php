@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Product;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
+use App\ProductCategory;
 
-class ProductController extends Controller
+class ProductController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -16,12 +18,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        //join('product_images','product_images.product_id','=','product.id')->
-        //join('product_categories','product_categories.id','=','product_category_id')->
-        //select('product.*')->
-        //orderBy('product.id','desc');
-        //return $this->successResponse($products);
-        return response()->json(['products' => $products]);
+        return $this->successResponse($products);
 
     }
 
@@ -52,9 +49,20 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Product $product)
     {
-        //
+
+        $product->category;
+        $product->imageProduct;
+        return $this->successResponse($product);
+
+    }
+
+
+    public function categoryProduct(ProductCategory $category)
+    {
+
+        return $this->successResponse(["category"=> $category,"product"=> $category->product()->paginate(10)]);
     }
 
     /**
@@ -66,7 +74,7 @@ class ProductController extends Controller
     public function edit($id)
     {
         //
-    }
+     }
 
     /**
      * Update the specified resource in storage.
@@ -90,4 +98,6 @@ class ProductController extends Controller
     {
         //
     }
+
+
 }

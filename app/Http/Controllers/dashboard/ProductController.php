@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        return view("product.list",['list'=>$products]);
+        return response()->json(['products' => $products]);
     }
 
     /**
@@ -38,7 +38,7 @@ class ProductController extends Controller
      */
     public function store(StoreProductPost $request)
     {
-        Product::create($request->validated());
+
     }
 
     /**

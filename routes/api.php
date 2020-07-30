@@ -22,23 +22,27 @@ use Illuminate\Support\Facades\Route;
 //Laravel and auth routes are prefixed with auth. So our /login route is
 // actually /api/auth/login
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'auth'
+Route::group(['middleware' => 'api','CORS',
+              'prefix' => 'auth'
 
 ], function ($router) {
 
     Route::post('register', 'JWTAuthController@register');
     Route::post('login', 'JWTAuthController@login');
-    Route::post('logout', 'JWTAuthController@logout');
-    Route::post('refresh', 'JWTAuthController@refresh');
-    Route::get('profile', 'JWTAuthController@profile');
-
 
 });
 
-Route::resource('product','api\ProductController')->only([
-    'index','show'
-])->middleware('CORS');
+Route::group(['middleware' => 'auth:api','CORS',
+              'prefix' => 'auth'
 
+], function ($router) {
+
+    Route::post('logout', 'JWTAuthController@logout');
+    Route::post('refresh', 'JWTAuthController@refresh');
+    Route::get('profile', 'JWTAuthController@profile');
+    Route::resource('product','api\ProductController')->only(['index','show']);
+    Route::get('product/{category}/category','api\ProductController@categoryProduct');
+    Route::get('category','api\ProductCategoryController@index');
+
+});
 

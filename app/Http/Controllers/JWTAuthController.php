@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
+use App\User;
 use Validator;
 use Illuminate\Http\Request;
-use App\User;
-use Illuminate\Auth\Events\Validated;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\RegisterRequest;
 
 class JWTAuthController extends Controller
 {
@@ -28,21 +28,26 @@ class JWTAuthController extends Controller
      */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|between:2,100',
-            'email' => 'required|email|unique:users|max:50',
-            'password' => 'required|confirmed|string|min:6',
-        ]);
+       // $user = User::create(array_merge(['password' => bcrypt($request->password)]));
+       $v_user = new RegisterRequest();
+       $validator = $request->validate($v_user->rules());
 
-        $user = User::create(array_merge(
-                    $validator->validated(),
-                    ['password' => bcrypt($request->password)]
-                ));
-
+       if($validator){
+        $user = new User();
+        $user->name = $request['name'];
+        $user->email = $request['email'];
+        $user->password = bcrypt($request['password']);
+        $user->rol_id = 1;
+        $user->save();
         return response()->json([
             'message' => 'Successfully registered',
             'user' => $user
         ], 201);
+       }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
+
     }
 
      /**
@@ -52,21 +57,14 @@ class JWTAuthController extends Controller
      */
     public function login(Request $request)
     {
-    	$validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        if (! $token = auth()->attempt($validator->validated())) {
+        if (! $token = auth()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         return $this->createNewToken($token);
     }
+
 
      /**
      * Get the authenticated User.
@@ -85,7 +83,7 @@ class JWTAuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
+        Auth::logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -97,7 +95,7 @@ class JWTAuthController extends Controller
      */
     public function refresh()
     {
-        return $this->createNewToken(auth()->refresh());
+        return $this->createNewToken(Auth::refresh());
     }
 
     /**
@@ -112,7 +110,7 @@ class JWTAuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => Auth::factory()->getTTL() * 60
         ]);
     }
 }
