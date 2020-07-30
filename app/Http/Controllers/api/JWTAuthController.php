@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\api;
 
 use App\User;
-use Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\RegisterRequest;
+use Illuminate\Support\Facades\Validator;
+
 
 class JWTAuthController extends Controller
 {
@@ -20,12 +21,12 @@ class JWTAuthController extends Controller
     {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
-
     /**
      * Register a User.
      *
      * @return \Illuminate\Http\JsonResponse
      */
+
     public function register(Request $request)
     {
        // $user = User::create(array_merge(['password' => bcrypt($request->password)]));
@@ -47,24 +48,25 @@ class JWTAuthController extends Controller
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
-
     }
 
-     /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login(Request $request)
     {
+    	$validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password' => 'required',
+        ]);
 
-        if (! $token = auth()) {
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         return $this->createNewToken($token);
     }
-
 
      /**
      * Get the authenticated User.
@@ -83,7 +85,7 @@ class JWTAuthController extends Controller
      */
     public function logout()
     {
-        Auth::logout();
+        auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -95,7 +97,7 @@ class JWTAuthController extends Controller
      */
     public function refresh()
     {
-        return $this->createNewToken(Auth::refresh());
+        return $this->createNewToken(auth()->refresh());
     }
 
     /**
@@ -110,7 +112,9 @@ class JWTAuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
+            'expires_in' => auth()->factory()->getTTL() * 60
         ]);
     }
+
+
 }

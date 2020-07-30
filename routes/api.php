@@ -1,6 +1,9 @@
 <?php
 
+use App\User;
+use Tymon\JWTAuth\JWT;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,13 +25,11 @@ use Illuminate\Support\Facades\Route;
 //Laravel and auth routes are prefixed with auth. So our /login route is
 // actually /api/auth/login
 
-Route::group(['middleware' => 'api','CORS',
-              'prefix' => 'auth'
-
+Route::group(['middleware' => 'api','CORS'
 ], function ($router) {
 
-    Route::post('register', 'JWTAuthController@register');
-    Route::post('login', 'JWTAuthController@login');
+    Route::post('register', 'api\JWTAuthController@register');
+    Route::post('login', 'api\JWTAuthController@login');
 
 });
 
@@ -45,4 +46,3 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::get('category','api\ProductCategoryController@index');
 
 });
-
