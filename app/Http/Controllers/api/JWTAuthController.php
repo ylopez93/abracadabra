@@ -6,7 +6,7 @@ use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\StoreRegisterPost;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -30,7 +30,7 @@ class JWTAuthController extends Controller
     public function register(Request $request)
     {
        // $user = User::create(array_merge(['password' => bcrypt($request->password)]));
-       $v_user = new RegisterRequest();
+       $v_user = new StoreRegisterPost();
        $validator = $request->validate($v_user->rules());
 
        if($validator){

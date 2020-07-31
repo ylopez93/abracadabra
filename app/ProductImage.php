@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductImage extends Model
 {
-    protected $fillable = ['product_id','name'];
+    protected $fillable = ['name','product_id'];
 
-    public function productImage(){
-         return $this->belongsTo(Product::class);
-    }
+
 
 }

@@ -31,7 +31,6 @@ class CreateOrderTable extends Migration
             $table->bigInteger('municipie_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
             $table->double('transportation_cost', 8, 2)->nullable();
-
             $table->timestamps();
         });
     }
