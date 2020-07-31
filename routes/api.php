@@ -31,6 +31,7 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('register', 'api\JWTAuthController@register');
     Route::post('login', 'api\JWTAuthController@login');
 
+
 });
 
 Route::group(['middleware' => 'auth:api','CORS',
@@ -44,5 +45,6 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('product','api\ProductController')->only(['index','show']);
     Route::get('product/{category}/category','api\ProductController@categoryProduct');
     Route::get('category','api\ProductCategoryController@index');
+
 
 });

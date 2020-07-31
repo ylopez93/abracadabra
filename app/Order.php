@@ -24,4 +24,14 @@ class Order extends Model
         'transportation_cost'
     ];
 
+    public function orderProduct()
+    {
+        return $this->hasMany(OrderProduct::class);
+    }
+
+    public function messenger()
+    {
+        return $this->belongsTo(Messenger::class);
+    }
+
 }

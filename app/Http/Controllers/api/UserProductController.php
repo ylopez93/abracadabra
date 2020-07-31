@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Product;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
-use App\ProductCategory;
+use App\UserProduct;
+use Illuminate\Http\Request;
 
-class ProductController extends ApiResponseController
+class UserProductController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,9 +15,7 @@ class ProductController extends ApiResponseController
      */
     public function index()
     {
-        $products = Product::all();
-        return $this->successResponse($products);
-
+        //
     }
 
     /**
@@ -46,44 +42,33 @@ class ProductController extends ApiResponseController
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\UserProduct  $userProduct
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show(UserProduct $userProduct)
     {
-
-        $product->category;
-        $product->image;
-        return $this->successResponse($product);
-
-    }
-
-
-    public function categoryProduct(ProductCategory $category)
-    {
-
-        return $this->successResponse(["category"=> $category,"product"=> $category->product()->paginate(10)]);
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\UserProduct  $userProduct
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(UserProduct $userProduct)
     {
         //
-     }
+    }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\UserProduct  $userProduct
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, UserProduct $userProduct)
     {
         //
     }
@@ -91,13 +76,11 @@ class ProductController extends ApiResponseController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\UserProduct  $userProduct
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(UserProduct $userProduct)
     {
         //
     }
-
-
 }
