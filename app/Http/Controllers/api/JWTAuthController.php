@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreRegisterPost;
 use App\Http\Requests\RegisterAuthRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
-// use Illuminate\Support\Facades\Validator;
+
 
 
 class JWTAuthController extends Controller
