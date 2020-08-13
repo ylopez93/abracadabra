@@ -17,6 +17,7 @@ class ProductController extends ApiResponseController
      */
     public function index()
     {
+        //creacion de cruds index
         $products = Product::all();
         return $this->successResponse($products);
 
@@ -29,7 +30,7 @@ class ProductController extends ApiResponseController
      */
     public function create()
     {
-        //
+        //creacion de cruds create
     }
 
     /**
@@ -40,7 +41,7 @@ class ProductController extends ApiResponseController
      */
     public function store(Request $request)
     {
-        //
+                 $product = Product::all();
     }
 
     /**
