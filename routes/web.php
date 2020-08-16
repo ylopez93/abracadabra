@@ -18,5 +18,5 @@ Route::get('/', function () {
 });
 
 
-Route::resource('dashboard/product', 'dashboard\ProductController');
+//Route::resource('dashboard/product', 'dashboard\ProductController');
 

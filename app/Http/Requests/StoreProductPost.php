@@ -28,7 +28,6 @@ class StoreProductPost extends FormRequest
             'description'=> 'required|max:255',
             'stock' => 'required|integer',
             'price' => 'required',
-            'state' => 'required',
             'product_category_id' => 'required',
         ];
     }

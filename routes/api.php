@@ -31,9 +31,6 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('register', 'api\JWTAuthController@register');
     Route::post('login', 'api\JWTAuthController@login');
 
-
-
-
 });
 
 Route::group(['middleware' => 'auth:api','CORS',
@@ -44,9 +41,9 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('logout', 'api\JWTAuthController@logout');
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
-    Route::resource('product','api\ProductController')->only(['index','show']);
     Route::get('product/{category}/category','api\ProductController@categoryProduct');
-    Route::get('category','api\ProductCategoryController@index');
-
+    Route::resource('product','api\ProductController');
+    Route::resource('category','api\ProductCategoryController');
+    //Route::get('order','api\OrderController@index');
 
 });

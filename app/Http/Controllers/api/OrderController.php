@@ -15,7 +15,8 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //
+        $orders = Order::all();
+        return $this->successResponse([$orders,'Products retrieved successfully.']);
     }
 
     /**

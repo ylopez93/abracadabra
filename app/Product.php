@@ -5,9 +5,14 @@ namespace App;
 use App\ProductImage;
 use App\ProductCategory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
+
+    protected $dates = ['deleted_at'];
+
     protected $fillable = ['name', 'code', 'description', 'stock', 'price', 'discount_percent', 'state', 'product_category_id'];
 
 

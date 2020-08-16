@@ -6,6 +6,7 @@ use App\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\api\ApiResponseController;
+use App\Http\Requests\StoreProductPost;
 use App\ProductCategory;
 
 class ProductController extends ApiResponseController
@@ -17,9 +18,9 @@ class ProductController extends ApiResponseController
      */
     public function index()
     {
-        //creacion de cruds index
         $products = Product::all();
-        return $this->successResponse($products);
+        return $this->successResponse([$products,'Products retrieved successfully.']);
+
 
     }
 
@@ -41,7 +42,32 @@ class ProductController extends ApiResponseController
      */
     public function store(Request $request)
     {
-                 $product = Product::all();
+
+            $v_product = new StoreProductPost();
+            $validator = $request->validate($v_product->rules());
+            if($validator){
+               $product = new Product();
+               $product->name = $request['name'];
+               //buscar funcion para generar codigo
+               $product->code = $request['code'];
+               $product->description = $request['description'];
+               $product->stock = $request['stock'];
+               $product->price = $request['price'];
+               $product->discount_percent = $request['discount_percent'];
+               $product->state = 'published';
+               $product->product_category_id = $request['product_category_id'];
+               $product->save();
+
+            // $product = Product::create($request);
+            return $this->successResponse([$product, 'Product created successfully.']);
+
+            }
+            return response()->json([
+                'message' => 'Error al validar'
+            ], 201);
+
+
+
     }
 
     /**
@@ -50,12 +76,15 @@ class ProductController extends ApiResponseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show($id)
     {
+        $product = Product::find($id);
 
-        $product->category;
-        $product->image;
-        return $this->successResponse($product);
+        if(is_null($product)){
+            return $this->errorResponse('Product not found.');
+        }
+
+        return $this->successResponse([$product,'Product retrieved successfully.']);
 
     }
 
@@ -84,9 +113,27 @@ class ProductController extends ApiResponseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $v_product = new StoreProductPost();
+        $validator = $request->validate($v_product->rules());
+        if($validator){
+        $product->name = $request['name'];
+        $product->code = $request['code'];
+        $product->description = $request['description'];
+        $product->stock = $request['stock'];
+        $product->price = $request['price'];
+        $product->discount_percent = $request['discount_percent'];
+        $product->state = $request['state'];
+        $product->product_category_id = $request['product_category_id'];
+        $product->save();
+        return $this->successResponse([$product, 'Product updated successfully.']);
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
+
+
     }
 
     /**
@@ -95,10 +142,13 @@ class ProductController extends ApiResponseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return $this->successResponse('Product deleted successfully.');
     }
+
+
 
 
 }
