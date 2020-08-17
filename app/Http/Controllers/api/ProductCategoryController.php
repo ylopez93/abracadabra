@@ -21,6 +21,25 @@ class ProductCategoryController extends ApiResponseController
         return $this->successResponse([$productCategories,'Products Categories retrieved successfully.']);
     }
 
+    public function categoryProduct(ProductCategory $category)
+    {
+
+        return $this->successResponse(["category"=> $category,"product"=> $category->product()->paginate(10)]);
+    }
+
+
+    public function categoryProductAll()
+
+    {
+        //preguntarle a roilan que datos espscificos quiere que sean devueltos en la query
+        $categories = ProductCategory::
+        join('products','products.product_category_id','=','product_categories.id')->
+        select('product_categories.name','product_categories.image','products.name as product',
+        'products.code','products.description','products.stock','products.price','products.discount_percent')->
+        orderBy('product_categories.name','desc')->paginate(10);
+        return $this->successResponse([$categories,'Products retrieved successfully.']);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

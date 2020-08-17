@@ -41,7 +41,8 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('logout', 'api\JWTAuthController@logout');
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
-    Route::get('product/{category}/category','api\ProductController@categoryProduct');
+    Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
+    Route::get('category/products','api\ProductCategoryController@categoryProductAll');
     Route::resource('product','api\ProductController');
     Route::resource('category','api\ProductCategoryController');
     //Route::get('order','api\OrderController@index');

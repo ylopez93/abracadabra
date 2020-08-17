@@ -18,9 +18,14 @@ class ProductController extends ApiResponseController
      */
     public function index()
     {
-        $products = Product::all();
+        //para que el join devuelva todos los productos ninguno de los campos relacionados en tablas externas debe ser null
+        $products = Product::
+        join('product_categories','product_categories.id','=','products.product_category_id')->
+        join('products_images','products_images.product_image_id','=','products.id')->
+        select('products.name','products.code','products.description','products.stock','products.price',
+        'products.discount_percent','product_categories.name as category','products_images.name as image')->
+        orderBy('products.created_at','desc')->paginate(10);
         return $this->successResponse([$products,'Products retrieved successfully.']);
-
 
     }
 
