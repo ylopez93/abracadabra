@@ -21,6 +21,7 @@ class CreateMessengerTable extends Migration
             $table->string('vehicle_registration')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
