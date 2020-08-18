@@ -23,8 +23,8 @@ class CreateProductsTable extends Migration
             $table->double('discount_percent', 8, 2)->nullable();
             $table->enum('state', ['pendant', 'published', 'archived'])->default('published');
             $table->bigInteger('product_category_id')->unsigned();
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

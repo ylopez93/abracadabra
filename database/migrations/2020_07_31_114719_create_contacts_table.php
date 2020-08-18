@@ -21,6 +21,7 @@ class CreateContactsTable extends Migration
             $table->string('movil_phone')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

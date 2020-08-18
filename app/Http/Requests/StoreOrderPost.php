@@ -28,14 +28,14 @@ class StoreOrderPost extends FormRequest
             'user_name'=> 'required|max:255',
             'user_phone'=> 'required|max:255',
             'user_address'=> 'required|max:255',
-            'pickup_date' => 'required|date',
-            'pickup_time_from' => 'required',
-            'pickup_time_to' => 'required',
+            // 'pickup_date' => 'required|date',
+            // 'pickup_time_from' => 'required',
+            // 'pickup_time_to' => 'required',
             'message'=> 'required|max:255',
-            'state' => 'required',
-            'payment_type' => 'required',
-            'payment_state' => 'required',
-            'delivery_type' => 'required',
+            // 'state' => 'required',
+            // 'payment_type' => 'required',
+            // 'payment_state' => 'required',
+            // 'delivery_type' => 'required',
 
         ];
     }

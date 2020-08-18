@@ -2,12 +2,19 @@
 
 namespace App;
 
+use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+
+    use SoftDeletes;
+    protected $dates = ['deleted_at'];
+
     protected $fillable = [
-        'code','user_name',
+        'code',
+        'user_name',
         'user_phone',
         'user_address',
         'pickup_date',
@@ -19,7 +26,6 @@ class Order extends Model
         'payment_state',
         'delivery_type',
         'messenger_id',
-        'municipie_id',
         'user_id',
         'transportation_cost'
     ];
@@ -32,6 +38,11 @@ class Order extends Model
     public function messenger()
     {
         return $this->belongsTo(Messenger::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
 }

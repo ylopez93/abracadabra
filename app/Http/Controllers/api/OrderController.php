@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Order;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
+use App\Http\Requests\StoreOrderPost;
 
-class OrderController extends Controller
+class OrderController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -15,8 +17,12 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::all();
-        return $this->successResponse([$orders,'Products retrieved successfully.']);
+        $orders = Order::
+        join('messengers','messengers.id','=','orders.messenger_id')->
+        join('users','users.id','=','orders.user_id')->
+        select('orders.*','users.*','messengers.*')->
+        orderBy('orders.created_at','desc')->paginate(10);
+        return $this->successResponse([$orders,'Orders retrieved successfully.']);
     }
 
     /**
@@ -37,7 +43,35 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $v_order = new StoreOrderPost();
+        $validator = $request->validate($v_order->rules());
+        if($validator){
+           $order = new Order();
+           $order->code = $request['code'];
+           $order->user_name = $request['user_name'];
+           $order->user_phone = $request['user_phone'];
+           $order->user_address = $request['user_address'];
+           $order->pickup_date = $request['pickup_date'];
+           $order->pickup_time_from = $request['pickup_time_from'];
+           $order->pickup_time_to = $request['pickup_time_to'];;
+           $order->message = $request['message'];
+           $order->state = 'new';
+           $order->payment_type = 'cash';
+           $order->payment_state = 'undone';
+           $order->delivery_type = 'standard';
+           $order->messenger_id = $request['messenger_id'];
+           $order->user_id = $request['user_id'];
+           $order->transportation_cost = $request['transportation_cost'];
+           $order->save();
+
+        return $this->successResponse([$order, 'Order created successfully.']);
+
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
+
     }
 
     /**
@@ -46,9 +80,15 @@ class OrderController extends Controller
      * @param  \App\Order  $order
      * @return \Illuminate\Http\Response
      */
-    public function show(Order $order)
+    public function show($id)
     {
-        //
+        $order = Order::find($id);
+
+        if(is_null($order)){
+            return $this->errorResponse('Order not found.');
+        }
+
+        return $this->successResponse([$order,'Product retrieved successfully.']);
     }
 
     /**
@@ -71,7 +111,33 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-        //
+        $v_order = new StoreOrderPost();
+        $validator = $request->validate($v_order->rules());
+        if($validator){
+           $order->code = $request['code'];
+           $order->user_name = $request['user_name'];
+           $order->user_phone = $request['user_phone'];
+           $order->user_address = $request['user_address'];
+           $order->pickup_date = $request['pickup_date'];
+           $order->pickup_time_from = $request['pickup_time_from'];
+           $order->pickup_time_to = $request['pickup_time_to'];;
+           $order->message = $request['message'];
+           $order->state = 'new';
+           $order->payment_type = 'cash';
+           $order->payment_state = 'undone';
+           $order->delivery_type = 'standard';
+           $order->messenger_id = $request['messenger_id'];
+           $order->user_id = $request['user_id'];
+           $order->transportation_cost = $request['transportation_cost'];
+           $order->save();
+
+        return $this->successResponse([$order, 'Order created successfully.']);
+
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
+
     }
 
     /**
@@ -82,6 +148,7 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        //
+        $order->delete();
+        return $this->successResponse('Order deleted successfully.');
     }
 }

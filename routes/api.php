@@ -44,9 +44,10 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('product','api\ProductController');
     Route::resource('category','api\ProductCategoryController');
     Route::resource('messenger','api\MessengerController');
+    Route::resource('contact','api\ContactController');
+    Route::resource('order','api\OrderController');
     Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
     Route::get('category/products','api\ProductCategoryController@categoryProductAll');
-
     //Route::get('order','api\OrderController@index');
 
 });

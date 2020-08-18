@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\api;
 
 use App\Contact;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
+use App\Http\Requests\StoreContactPost;
 
-class ContactController extends Controller
+class ContactController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -15,7 +17,8 @@ class ContactController extends Controller
      */
     public function index()
     {
-        //
+        $contacts = Contact::all();
+        return $this->successResponse([$contacts,'Messengers retrieved successfully.']);
     }
 
     /**
@@ -36,7 +39,24 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $v_contact = new StoreContactPost();
+        $validator = $request->validate($v_contact->rules());
+        if($validator){
+           $contacts = new Contact();
+           $contacts->location = $request['location'];
+           $contacts->email = $request['email'];
+           $contacts->phone = $request['phone'];
+           $contacts->movil_phone = $request['movil_phone'];
+           $contacts->description = $request['description'];
+           $contacts->save();
+
+        // $product = Product::create($request);
+        return $this->successResponse([$contacts, 'Contact created successfully.']);
+
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -45,9 +65,15 @@ class ContactController extends Controller
      * @param  \App\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function show(Contact $contact)
+    public function show($id)
     {
-        //
+        $contact = Contact::find($id);
+
+        if(is_null($contact)){
+            return $this->errorResponse('Contact  not found.');
+        }
+
+        return $this->successResponse([$contact,'Contact retrieved successfully.']);
     }
 
     /**
@@ -70,7 +96,20 @@ class ContactController extends Controller
      */
     public function update(Request $request, Contact $contact)
     {
-        //
+        $v_contact = new StoreContactPost();
+        $validator = $request->validate($v_contact->rules());
+        if($validator){
+        $contact->location = $request['location'];
+        $contact->email = $request['email'];
+        $contact->phone = $request['phone'];
+        $contact->movil_phone = $request['movil_phone'];
+        $contact->description = $request['description'];
+        $contact->save();
+        return $this->successResponse([$contact, 'Contact updated successfully.']);
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -81,6 +120,7 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
-        //
+        $contact->delete();
+        return $this->successResponse('Contact deleted successfully.');
     }
 }

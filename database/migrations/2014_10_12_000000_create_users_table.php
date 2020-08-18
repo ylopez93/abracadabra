@@ -24,7 +24,9 @@ class CreateUsersTable extends Migration
             $table->string('confirmation_code')->nullable();
             $table->boolean('confirmed')->default(false);
             $table->rememberToken();
+            $table->bigInteger('municipie_id')->unsigned();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
