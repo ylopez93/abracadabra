@@ -18,6 +18,7 @@ class CreateMunicipiesTable extends Migration
             $table->string('name');
             $table->bigInteger('province_id')->unsigned();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

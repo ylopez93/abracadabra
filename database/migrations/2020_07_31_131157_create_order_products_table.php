@@ -20,6 +20,7 @@ class CreateOrderProductsTable extends Migration
             $table->integer('quantity');
             $table->double('total', 8, 2);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

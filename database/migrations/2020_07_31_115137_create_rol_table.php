@@ -18,6 +18,7 @@ class CreateRolTable extends Migration
             //$table->string('key', 10);
             $table->string('name',100);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
