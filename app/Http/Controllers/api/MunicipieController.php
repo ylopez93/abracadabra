@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Municipie;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
+use App\Http\Requests\StoreMunicipiePost;
 
-class MunicipieController extends Controller
+class MunicipieController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -15,7 +17,14 @@ class MunicipieController extends Controller
      */
     public function index()
     {
-        //
+        $municipies = Municipie::all();
+        return $this->successResponse([$municipies,'Municipie retrieved successfully.']);
+    }
+
+    public function municipieUsers(Municipie $municipie)
+    {
+
+        return $this->successResponse(["municipie"=> $municipie,"user"=> $municipie->user()->paginate(10)]);
     }
 
     /**
@@ -36,7 +45,20 @@ class MunicipieController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $v_municipie = new StoreMunicipiePost();
+        $validator = $request->validate($v_municipie->rules());
+        if($validator){
+           $municipie = new Municipie();
+           $municipie->name = $request['name'];
+           $municipie->save();
+
+        // $product = Product::create($request);
+        return $this->successResponse([$municipie, 'Municipie created successfully.']);
+
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -45,9 +67,15 @@ class MunicipieController extends Controller
      * @param  \App\Municipie  $municipie
      * @return \Illuminate\Http\Response
      */
-    public function show(Municipie $municipie)
+    public function show($id)
     {
-        //
+        $municipie = Municipie::find($id);
+
+        if(is_null($municipie)){
+            return $this->errorResponse('Country  not found.');
+        }
+
+        return $this->successResponse([$municipie,'Municipie retrieved successfully.']);
     }
 
     /**
@@ -70,7 +98,16 @@ class MunicipieController extends Controller
      */
     public function update(Request $request, Municipie $municipie)
     {
-        //
+        $v_municipie = new StoreMunicipiePost();
+        $validator = $request->validate($v_municipie->rules());
+        if($validator){
+        $municipie->name = $request['name'];
+        $municipie->save();
+        return $this->successResponse([$municipie, 'Municipie updated successfully.']);
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -81,6 +118,7 @@ class MunicipieController extends Controller
      */
     public function destroy(Municipie $municipie)
     {
-        //
+        $municipie->delete();
+        return $this->successResponse('Municipie deleted successfully.');
     }
 }

@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\api;
 
 use App\Product;
+use App\ProductImage;
+use App\ProductCategory;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Requests\StoreProductPost;
-use App\ProductCategory;
+use App\Http\Controllers\api\ApiResponseController;
 
 class ProductController extends ApiResponseController
 {
@@ -21,9 +22,9 @@ class ProductController extends ApiResponseController
         //para que el join devuelva todos los productos ninguno de los campos relacionados en tablas externas debe ser null
         $products = Product::
         join('product_categories','product_categories.id','=','products.product_category_id')->
-        join('products_images','products_images.product_image_id','=','products.id')->
-        select('products.name','products.code','products.description','products.stock','products.price',
-        'products.discount_percent','product_categories.name as category','products_images.name as image')->
+        join('product_images','product_images.product_image_id','=','products.id')->
+        select('products.name','products.description','products.stock','products.price',
+        'products.discount_percent','product_categories.id as product_category_id','product_categories.name as category','product_images.name as image')->
         orderBy('products.created_at','desc')->paginate(10);
         return $this->successResponse([$products,'Products retrieved successfully.']);
 
@@ -53,8 +54,6 @@ class ProductController extends ApiResponseController
             if($validator){
                $product = new Product();
                $product->name = $request['name'];
-               //buscar funcion para generar codigo
-               $product->code = $request['code'];
                $product->description = $request['description'];
                $product->stock = $request['stock'];
                $product->price = $request['price'];
@@ -63,17 +62,35 @@ class ProductController extends ApiResponseController
                $product->product_category_id = $request['product_category_id'];
                $product->save();
 
-            // $product = Product::create($request);
-            return $this->successResponse([$product, 'Product created successfully.']);
+               $filename = time() .".". $request->image->extension();
+               $request->image->move(public_path('images'),$filename);
+               $productimage = new ProductImage();
+               $productimage->name = $filename;
+               $productimage->product_image_id = $product->id;
+               $productimage->save();
+
+            return $this->successResponse(['message' =>'Product created successfully.']);
 
             }
-            return response()->json([
-                'message' => 'Error al validar'
-            ], 201);
+            return $this->errorResponse(['message' => 'Error al validar']);
 
 
 
     }
+
+
+
+    // public function image(Request $request, Post $post)
+    // {
+
+    //     $request->validate([
+    //         'image'=> 'required|mimes:jpeg,bmp,png|max:10240' //10MB
+    //      ]);
+    //       $filename = time() .".". $request->image->extension();
+    //       $request->image->move(public_path('images'),$filename);
+    //      PostImage::create(['image'=> $filename, 'post_id'=>$post->id]);
+    //      return back()->with('status','Imagen cargada con exito');
+    // }
 
     /**
      * Display the specified resource.
@@ -124,7 +141,6 @@ class ProductController extends ApiResponseController
         $validator = $request->validate($v_product->rules());
         if($validator){
         $product->name = $request['name'];
-        $product->code = $request['code'];
         $product->description = $request['description'];
         $product->stock = $request['stock'];
         $product->price = $request['price'];
@@ -134,9 +150,7 @@ class ProductController extends ApiResponseController
         $product->save();
         return $this->successResponse([$product, 'Product updated successfully.']);
         }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+        return $this->errorResponse(['message' => 'Error al validar']);
 
 
     }

@@ -12,7 +12,7 @@ class ProductImage extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['name','product_image_id'];
+    protected $fillable = ['product_image_id','name'];
 
     public function product(){
         return $this->belongsTo(Product::class);

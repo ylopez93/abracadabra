@@ -46,8 +46,11 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('messenger','api\MessengerController');
     Route::resource('contact','api\ContactController');
     Route::resource('order','api\OrderController');
+    Route::resource('country','api\CountryController');
+    Route::resource('municipie','api\MunicipieController');
+    //Route::get('municipie/{municipie}/user','api\MunicipieController@municipieUsers');
+    Route::get('country/{country}/province','api\CountryController@countryPorvinces');
     Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
     Route::get('category/products','api\ProductCategoryController@categoryProductAll');
-    //Route::get('order','api\OrderController@index');
 
 });
