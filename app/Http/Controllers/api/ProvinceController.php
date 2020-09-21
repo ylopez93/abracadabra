@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Province;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProvincePost;
 
 class ProvinceController extends Controller
 {
@@ -15,7 +16,14 @@ class ProvinceController extends Controller
      */
     public function index()
     {
-        //
+        $provinces = Province::all();
+        return $this->successResponse([$provinces,'Province retrieved successfully.']);
+    }
+
+    public function provincesMunicipies(Province $province)
+    {
+
+        return $this->successResponse(["province"=> $province,"municipie"=> $province->municipie()->paginate(10)]);
     }
 
     /**
@@ -36,7 +44,21 @@ class ProvinceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $v_province = new StoreProvincePost();
+        $validator = $request->validate($v_province->rules());
+        if($validator){
+           $province = new Province();
+           $province->name = $request['name'];
+           $province->country_id = $request['country_id'];
+           $province->save();
+
+        // $product = Product::create($request);
+        return $this->successResponse([$province, 'Province created successfully.']);
+
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -45,9 +67,15 @@ class ProvinceController extends Controller
      * @param  \App\Province  $province
      * @return \Illuminate\Http\Response
      */
-    public function show(Province $province)
+    public function show($id)
     {
-        //
+        $province = Province::find($id);
+
+        if(is_null($province)){
+            return $this->errorResponse('Province  not found.');
+        }
+
+        return $this->successResponse([$province,'Province retrieved successfully.']);
     }
 
     /**
@@ -70,7 +98,17 @@ class ProvinceController extends Controller
      */
     public function update(Request $request, Province $province)
     {
-        //
+        $v_province = new StoreProvincePost();
+        $validator = $request->validate($v_province->rules());
+        if($validator){
+            $province = new Province();
+            $province->name = $request['name'];
+            $province->country_id = $request['country_id'];
+            $province->save();
+        }
+        return response()->json([
+            'message' => 'Error al validar'
+        ], 201);
     }
 
     /**
@@ -81,6 +119,7 @@ class ProvinceController extends Controller
      */
     public function destroy(Province $province)
     {
-        //
+        $province->delete();
+        return $this->successResponse('Province deleted successfully.');
     }
 }

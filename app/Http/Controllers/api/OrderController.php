@@ -65,6 +65,9 @@ class OrderController extends ApiResponseController
            $order->messenger_id = $request['messenger_id'];
            $order->user_id = $request['user_id'];
            $order->transportation_cost = $request['transportation_cost'];
+
+           // inserto una relacion de orderProduct pq aki vienen el listado de productos que corresponde a la orden
+
            $order->save();
 
         return $this->successResponse([$order, 'Order created successfully.']);
@@ -133,6 +136,9 @@ class OrderController extends ApiResponseController
            $order->messenger_id = $request['messenger_id'];
            $order->user_id = $request['user_id'];
            $order->transportation_cost = $request['transportation_cost'];
+
+           // modifico una relacion de orderProduct pq aki vienen el listado de productos que corresponde a la orden
+
            $order->save();
 
         return $this->successResponse([$order, 'Order created successfully.']);

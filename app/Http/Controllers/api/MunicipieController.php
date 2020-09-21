@@ -50,6 +50,7 @@ class MunicipieController extends ApiResponseController
         if($validator){
            $municipie = new Municipie();
            $municipie->name = $request['name'];
+           $municipie->province_id = $request['province_id'];
            $municipie->save();
 
         // $product = Product::create($request);
@@ -72,7 +73,7 @@ class MunicipieController extends ApiResponseController
         $municipie = Municipie::find($id);
 
         if(is_null($municipie)){
-            return $this->errorResponse('Country  not found.');
+            return $this->errorResponse('Municipie  not found.');
         }
 
         return $this->successResponse([$municipie,'Municipie retrieved successfully.']);
@@ -102,6 +103,7 @@ class MunicipieController extends ApiResponseController
         $validator = $request->validate($v_municipie->rules());
         if($validator){
         $municipie->name = $request['name'];
+        $municipie->province_id = $request['province_id'];
         $municipie->save();
         return $this->successResponse([$municipie, 'Municipie updated successfully.']);
         }
