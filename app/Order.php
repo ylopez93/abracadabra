@@ -20,6 +20,8 @@ class Order extends Model
         'pickup_date',
         'pickup_time_from',
         'pickup_time_to',
+        'delivery_time_to',
+        'delivery_time_from',
         'message',
         'state',
         'payment_type',

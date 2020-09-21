@@ -12,7 +12,7 @@ class Messenger extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'name', 'surname', 'ci','vehicle_registration','image',
+        'name', 'surname', 'ci','phone','email','address','vehicle_registration','image',
     ];
 
     public function order()

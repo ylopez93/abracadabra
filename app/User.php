@@ -23,7 +23,9 @@ class User extends Authenticatable implements JWTSubject
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['name', 'email', 'password','rol_id'];
+    protected $fillable = [
+        'name', 'email', 'password','rol_id'
+    ];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -61,7 +63,12 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'id' =>$this->id,
+            'name' =>$this->name,
+            'email' =>$this->email,
+            'rol_id' =>$this->rol_id,
+        ];
     }
 
     public function rol()

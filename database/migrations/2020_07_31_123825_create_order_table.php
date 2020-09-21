@@ -22,13 +22,14 @@ class CreateOrderTable extends Migration
             $table->date('pickup_date')->nullable();
             $table->time('pickup_time_from')->nullable();
             $table->time('pickup_time_to')->nullable();
+            $table->time('delivery_time_to')->nullable();
+            $table->time('delivery_time_from')->nullable();
             $table->string('message');
             $table->enum('state', ['new', 'in_progress', 'delivered', 'cancel'])->default('new');
             $table->enum('payment_type', ['card', 'cash', 'paypal'])->default('cash');
             $table->enum('payment_state', ['done', 'undone', 'confirmed'])->default('undone');
             $table->enum('delivery_type', ['express','standard'])->default('standard');
             $table->bigInteger('messenger_id')->nullable()->unsigned();
-            // $table->bigInteger('municipie_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
             $table->double('transportation_cost', 8, 2)->nullable();
             $table->timestamps();

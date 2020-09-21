@@ -34,7 +34,7 @@ class ProductCategoryController extends ApiResponseController
         //preguntarle a roilan que datos espscificos quiere que sean devueltos en la query
         $categories = ProductCategory::
         join('products','products.product_category_id','=','product_categories.id')->
-        select('product_categories.name','product_categories.image','products.name as product',
+        select('product_categories.name','product_categories.id_module','product_categories.image','products.name as product',
         'products.code','products.description','products.stock','products.price','products.discount_percent')->
         orderBy('product_categories.name','desc')->paginate(10);
         return $this->successResponse([$categories,'Products retrieved successfully.']);
@@ -63,6 +63,7 @@ class ProductCategoryController extends ApiResponseController
         if($validator){
            $productcategory = new ProductCategory();
            $productcategory->name = $request['name'];
+           $productcategory->module = $request['module'];
            //insertar image
            $productcategory->image = $request['image'];
            $productcategory->save();
@@ -120,8 +121,17 @@ class ProductCategoryController extends ApiResponseController
         $validator = $request->validate($v_productcategory->rules());
         if($validator){
         $category->name = $request['name'];
-        $category->image = $request['image'];
+        $category->module = $request['module'];
+        if ($request->hasFile('file')) {
+
+            $filename = time() .".". $request->image->extension();
+            $request->image->move(public_path('images'),$filename);
+            $category->image = $filename;
+
+        }
+
         $category->save();
+
         return $this->successResponse([$category, 'Product Category updated successfully.']);
         }
         return response()->json([

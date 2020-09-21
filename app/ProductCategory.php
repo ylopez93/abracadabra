@@ -11,7 +11,7 @@ class ProductCategory extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['name','image'];
+    protected $fillable = ['name','image','module'];
 
     public function product(){
         return $this->hasMany(Product::class);

@@ -6,6 +6,7 @@ use App\Product;
 use App\ProductImage;
 use App\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductPost;
 use App\Http\Controllers\api\ApiResponseController;
@@ -23,8 +24,7 @@ class ProductController extends ApiResponseController
         $products = Product::
         join('product_categories','product_categories.id','=','products.product_category_id')->
         join('product_images','product_images.product_image_id','=','products.id')->
-        select('products.name','products.description','products.stock','products.price',
-        'products.discount_percent','product_categories.id as product_category_id','product_categories.name as category','product_images.name as image')->
+        select('products.*','product_categories.id as product_category_id','product_categories.name as category','product_images.name as image')->
         orderBy('products.created_at','desc')->paginate(10);
         return $this->successResponse([$products,'Products retrieved successfully.']);
 
@@ -69,7 +69,7 @@ class ProductController extends ApiResponseController
                $productimage->product_image_id = $product->id;
                $productimage->save();
 
-            return $this->successResponse(['message' =>'Product created successfully.']);
+            return $this->successResponse([ 'data'=>$product,'image' => $productimage,'message' =>'Product created successfully.']);
 
             }
             return $this->errorResponse(['message' => 'Error al validar']);
@@ -77,20 +77,6 @@ class ProductController extends ApiResponseController
 
 
     }
-
-
-
-    // public function image(Request $request, Post $post)
-    // {
-
-    //     $request->validate([
-    //         'image'=> 'required|mimes:jpeg,bmp,png|max:10240' //10MB
-    //      ]);
-    //       $filename = time() .".". $request->image->extension();
-    //       $request->image->move(public_path('images'),$filename);
-    //      PostImage::create(['image'=> $filename, 'post_id'=>$post->id]);
-    //      return back()->with('status','Imagen cargada con exito');
-    // }
 
     /**
      * Display the specified resource.
@@ -148,6 +134,18 @@ class ProductController extends ApiResponseController
         $product->state = $request['state'];
         $product->product_category_id = $request['product_category_id'];
         $product->save();
+
+        $productimage = ProductImage::select('select * from product_images where product_images.product_image_id = ?', [$product->id]);
+
+        if ($request->hasFile('file')) {
+            $filename  = time() .".". $request->image->extension();
+            $request->image->move(public_path('images'),$filename);
+            $productimage->name = $filename;
+            $productimage->product_image_id = $product->id;
+            $productimage->save();
+
+        }
+
         return $this->successResponse([$product, 'Product updated successfully.']);
         }
         return $this->errorResponse(['message' => 'Error al validar']);
@@ -166,6 +164,8 @@ class ProductController extends ApiResponseController
         $product->delete();
         return $this->successResponse('Product deleted successfully.');
     }
+
+
 
 
 

@@ -46,8 +46,14 @@ class MessengerController extends ApiResponseController
            $messenger->name = $request['name'];
            $messenger->surname = $request['surname'];
            $messenger->ci = $request['ci'];
+           $messenger->phone = $request['phone'];
+           $messenger->email = $request['email'];
+           $messenger->address = $request['address'];
            $messenger->vehicle_registration = $request['vehicle_registration'];
-           $messenger->image = $request['image'];
+
+           $filename = time() .".". $request->image->extension();
+           $request->image->move(public_path('images'),$filename);
+           $messenger->image = $filename;
            $messenger->save();
 
         // $product = Product::create($request);
@@ -102,9 +108,20 @@ class MessengerController extends ApiResponseController
         $messenger->name = $request['name'];
         $messenger->surname = $request['surname'];
         $messenger->ci = $request['ci'];
+        $messenger->phone = $request['phone'];
+        $messenger->email = $request['email'];
+        $messenger->address = $request['address'];
         $messenger->vehicle_registration = $request['vehicle_registration'];
-        $messenger->image = $request['image'];
+        if ($request->hasFile('file')) {
+
+            $filename = time() .".". $request->image->extension();
+            $request->image->move(public_path('images'),$filename);
+            $messenger->image = $filename;
+
+        }
+
         $messenger->save();
+
         return $this->successResponse([$messenger, 'Messenger updated successfully.']);
         }
         return response()->json([

@@ -54,7 +54,9 @@ class OrderController extends ApiResponseController
            $order->user_address = $request['user_address'];
            $order->pickup_date = $request['pickup_date'];
            $order->pickup_time_from = $request['pickup_time_from'];
-           $order->pickup_time_to = $request['pickup_time_to'];;
+           $order->pickup_time_to = $request['pickup_time_to'];
+           $order->delivery_time_to = $request['delivery_time_to'];
+           $order->delivery_time_from = $request['delivery_time_from'];
            $order->message = $request['message'];
            $order->state = 'new';
            $order->payment_type = 'cash';
@@ -120,7 +122,9 @@ class OrderController extends ApiResponseController
            $order->user_address = $request['user_address'];
            $order->pickup_date = $request['pickup_date'];
            $order->pickup_time_from = $request['pickup_time_from'];
-           $order->pickup_time_to = $request['pickup_time_to'];;
+           $order->pickup_time_to = $request['pickup_time_to'];
+           $order->delivery_time_to = $request['delivery_time_to'];
+           $order->delivery_time_from = $request['delivery_time_from'];
            $order->message = $request['message'];
            $order->state = 'new';
            $order->payment_type = 'cash';

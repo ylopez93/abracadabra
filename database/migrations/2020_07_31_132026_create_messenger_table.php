@@ -18,6 +18,9 @@ class CreateMessengerTable extends Migration
             $table->string('name');
             $table->string('surname');
             $table->string('ci');
+            $table->string('phone');
+            $table->string('email');
+            $table->string('address');
             $table->string('vehicle_registration')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();

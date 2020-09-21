@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreRegisterPost;
@@ -65,21 +66,34 @@ class JWTAuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only(['email', 'password']);
-        $jwt_token = null;
-        if (!$jwt_token = Auth::attempt($credentials)) {
+        $id = DB::select('select users.id from users where email = ?', [$request['email']]);
+        $user = User::find($id[0]->id);
+        $v_user = User::where('email', '=', $request['email']);
+        if($v_user != null){
+
+            $credentials = $request->only(['email', 'password']);
+            $payloadable = $user->getJWTCustomClaims();
+            $jwt_token = null;
+            if (!$jwt_token = Auth::attempt($credentials)) {
+                return  response()->json([
+                    'status' => 'invalid_credentials',
+                    'message' => 'Correo o contraseña no válidos.',
+                ], 401);
+            }
+
+
+            $jwt_token = Auth::fromUser($user,$payloadable);
+            $user = Auth::authenticate($request->token);
             return  response()->json([
-                'status' => 'invalid_credentials',
-                'message' => 'Correo o contraseña no válidos.',
-            ], 401);
+                'status' => 'Se ha logueado correctamente',
+                'token' => $jwt_token,
+                'data' => $user,
+            ]);
+
         }
 
-        $user = Auth::authenticate($request->token);
-        return  response()->json([
-            'status' => 'Se ha logueado correctamente',
-            'token' => $jwt_token,
-            'data' => $user,
-        ]);
+
+
     }
 
 
@@ -145,7 +159,7 @@ class JWTAuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60
+            'expires_in' => Auth::factory()->getTTL() * 480
         ]);
     }
 
