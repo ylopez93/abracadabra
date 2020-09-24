@@ -64,11 +64,13 @@ class ProductCategoryController extends ApiResponseController
            $productcategory = new ProductCategory();
            $productcategory->name = $request['name'];
            $productcategory->module = $request['module'];
-           //insertar image
-           $productcategory->image = $request['image'];
+
+           $filename = time() .".". $request->image->extension();
+           $request->image->move(public_path('images'),$filename);
+           $productcategory->image = $filename;
+
            $productcategory->save();
 
-        // $product = Product::create($request);
         return $this->successResponse([$productcategory, 'Product Category created successfully.']);
 
         }
@@ -122,7 +124,7 @@ class ProductCategoryController extends ApiResponseController
         if($validator){
         $category->name = $request['name'];
         $category->module = $request['module'];
-        if ($request->hasFile('file')) {
+        if ($request->hasFile('image')) {
 
             $filename = time() .".". $request->image->extension();
             $request->image->move(public_path('images'),$filename);

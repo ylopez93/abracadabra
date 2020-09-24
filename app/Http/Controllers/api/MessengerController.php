@@ -56,7 +56,6 @@ class MessengerController extends ApiResponseController
            $messenger->image = $filename;
            $messenger->save();
 
-        // $product = Product::create($request);
         return $this->successResponse([$messenger, 'Messenger created successfully.']);
 
         }
@@ -112,7 +111,7 @@ class MessengerController extends ApiResponseController
         $messenger->email = $request['email'];
         $messenger->address = $request['address'];
         $messenger->vehicle_registration = $request['vehicle_registration'];
-        if ($request->hasFile('file')) {
+        if ($request->hasFile('image')) {
 
             $filename = time() .".". $request->image->extension();
             $request->image->move(public_path('images'),$filename);

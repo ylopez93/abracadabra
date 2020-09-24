@@ -20,7 +20,7 @@ class CreateProductsTable extends Migration
             $table->integer('stock');
             $table->double('price', 8, 2);
             $table->double('discount_percent', 8, 2)->nullable();
-            $table->enum('state', ['pendant', 'published', 'archived'])->default('published');
+            $table->enum('state', ['published','archived'])->default('published');
             $table->bigInteger('product_category_id')->unsigned();
             $table->timestamps();
             $table->softDeletes();

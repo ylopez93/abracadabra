@@ -38,19 +38,40 @@ Route::group(['middleware' => 'auth:api','CORS',
 
 ], function ($router) {
 
+    //Users
     Route::post('logout', 'api\JWTAuthController@logout');
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
+
+    //Products
     Route::resource('product','api\ProductController');
-    Route::resource('category','api\ProductCategoryController');
-    Route::resource('messenger','api\MessengerController');
-    Route::resource('contact','api\ContactController');
-    Route::resource('order','api\OrderController');
-    Route::resource('country','api\CountryController');
-    Route::resource('municipie','api\MunicipieController');
-    //Route::get('municipie/{municipie}/user','api\MunicipieController@municipieUsers');
-    Route::get('country/{country}/province','api\CountryController@countryPorvinces');
+    Route::post('product/update/{product}','api\ProductController@update');
     Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
+
+    //Category
     Route::get('category/products','api\ProductCategoryController@categoryProductAll');
+    Route::resource('category','api\ProductCategoryController');
+    Route::post('category/update/{category}','api\ProductCategoryController@update');
+
+    //Messenger
+    Route::resource('messenger','api\MessengerController');
+    Route::post('messenger/update/{messenger}','api\MessengerController@update');
+
+    //Contact
+    Route::resource('contact','api\ContactController');
+
+    //Order
+    Route::resource('order','api\OrderController');
+
+    //Country
+    Route::resource('country','api\CountryController');
+    Route::get('country/{country}/province','api\CountryController@countryPorvinces');
+
+    //Municipie
+    Route::resource('municipie','api\MunicipieController');
+    Route::get('municipie/{municipie}/user','api\MunicipieController@municipieUsers');
+
+    //Province
+    Route::resource('province','api\ProvinceController');
 
 });

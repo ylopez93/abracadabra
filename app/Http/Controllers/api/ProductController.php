@@ -137,12 +137,14 @@ class ProductController extends ApiResponseController
 
         $productimage = ProductImage::select('select * from product_images where product_images.product_image_id = ?', [$product->id]);
 
-        if ($request->hasFile('file')) {
+        if ($request->hasFile('image')) {
+
             $filename  = time() .".". $request->image->extension();
             $request->image->move(public_path('images'),$filename);
             $productimage->name = $filename;
-            $productimage->product_image_id = $product->id;
-            $productimage->save();
+            $productimage->product_image_id = $request['id'];
+            $productimage = DB::update('update product_images set name = ?, product_image_id = ? where product_image_id = ?', [$filename,$request['id'],$product->id]);
+
 
         }
 
