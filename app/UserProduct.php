@@ -13,6 +13,8 @@ class UserProduct extends Model
 
     protected $fillable = ['user_id','product_id'];
 
+    protected $hidden = ['created_at','updated_at'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

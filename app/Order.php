@@ -32,6 +32,8 @@ class Order extends Model
         'transportation_cost'
     ];
 
+    protected $hidden = ['created_at','updated_at'];
+
     public function orderProduct()
     {
         return $this->hasMany(OrderProduct::class);

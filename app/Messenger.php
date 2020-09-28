@@ -15,6 +15,8 @@ class Messenger extends Model
         'name', 'surname', 'ci','phone','email','address','vehicle_registration','image',
     ];
 
+    protected $hidden = ['created_at','updated_at'];
+
     public function order()
     {
         return $this->hasMany(Order::class);

@@ -13,6 +13,8 @@ class OrderProduct extends Model
 
     protected $fillable = ['product_id','order_id','quantity','total'];
 
+    protected $hidden = ['created_at','updated_at'];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

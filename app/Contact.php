@@ -12,4 +12,6 @@ class Contact extends Model
 
     protected $fillable = ['location, email, phone, movil_phone, description'];
 
+    protected $hidden = ['created_at','updated_at'];
+
 }

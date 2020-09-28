@@ -10,6 +10,8 @@ class Country extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
+    protected $hidden = ['created_at','updated_at'];
+
     protected $fillable = ['name'];
 
     public function province()

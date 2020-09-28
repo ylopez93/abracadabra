@@ -19,12 +19,10 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->bigInteger('rol_id')->unsigned();
             $table->enum('active', ['active', 'desactive'])->default('desactive');
             $table->string('confirmation_code')->nullable();
             $table->boolean('confirmed')->default(false);
             $table->rememberToken();
-            $table->bigInteger('municipie_id')->unsigned();
             $table->timestamps();
             $table->softDeletes();
         });

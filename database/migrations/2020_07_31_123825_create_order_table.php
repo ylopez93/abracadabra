@@ -29,8 +29,6 @@ class CreateOrderTable extends Migration
             $table->enum('payment_type', ['card', 'cash', 'paypal'])->default('cash');
             $table->enum('payment_state', ['done', 'undone', 'confirmed'])->default('undone');
             $table->enum('delivery_type', ['express','standard'])->default('standard');
-            $table->bigInteger('messenger_id')->nullable()->unsigned();
-            $table->bigInteger('user_id')->unsigned();
             $table->double('transportation_cost', 8, 2)->nullable();
             $table->timestamps();
             $table->softDeletes();
