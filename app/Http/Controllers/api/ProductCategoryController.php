@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryProduct;
 use App\Http\Controllers\api\ApiResponseController;
@@ -34,10 +35,29 @@ class ProductCategoryController extends ApiResponseController
         //preguntarle a roilan que datos espscificos quiere que sean devueltos en la query
         $categories = ProductCategory::
         join('products','products.product_category_id','=','product_categories.id')->
-        select('product_categories.name','product_categories.id_module','product_categories.image','products.name as product',
-        'products.code','products.description','products.stock','products.price','products.discount_percent')->
+        select('product_categories.name','product_categories.module','product_categories.image','products.*')->
         orderBy('product_categories.name','desc')->paginate(10);
         return $this->successResponse([$categories,'Products retrieved successfully.']);
+    }
+
+     public function getCategoryModule($module){
+
+        $categories = DB::select('select * from product_categories where product_categories.module = ?', [$module]);
+
+        return $this->successResponse([$categories,' Categories retrieved successfully.']);
+     }
+
+     public function byCategoryProductAll($id)
+    {
+        $category = ProductCategory::findOrFail($id);
+
+        $categoryProducts = ProductCategory::join('products','products.product_category_id','=','product_categories.id')
+                ->join('product_images','product_images.product_image_id','=','products.id')
+                ->select('product_categories.name as category','product_categories.module','products.*','product_images.name as image')
+                ->where('product_categories.name',$category->name)
+                ->whereNull('products.deleted_at')
+                ->get();
+        return $this->successResponse([$categoryProducts,'Products retrieved successfully.']);
     }
 
     /**

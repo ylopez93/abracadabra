@@ -4,9 +4,12 @@ namespace App\Http\Controllers\api;
 
 use App\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Requests\StoreOrderPost;
+use App\Http\Controllers\api\ApiResponseController;
+use App\OrderProduct;
+use App\UserProduct;
 
 class OrderController extends ApiResponseController
 {
@@ -65,12 +68,30 @@ class OrderController extends ApiResponseController
            $order->messenger_id = $request['messenger_id'];
            $order->user_id = $request['user_id'];
            $order->transportation_cost = $request['transportation_cost'];
+           $order->save();
 
            // inserto una relacion de orderProduct pq aki vienen el listado de productos que corresponde a la orden
 
-           $order->save();
+           $Productos = UserProduct::select('user_products.*')
+                    ->where('user_id',$order->user_id)
+                    ->whereNull('deleted_at')
+                    ->get();
 
-        return $this->successResponse([$order, 'Order created successfully.']);
+                    foreach ($Productos as $producto) {
+
+                        $order_product = new OrderProduct();
+                        $order_product->product_id = $producto->product_id;
+                        $order_product->order_id = $order->id;
+                        $order_product->quantity = $producto->qty_unit;
+                        $order_product->total = $producto->total_price;
+                        $order_product->save();
+
+                    }
+
+            $productsOrder = DB::select('select order_products.* from order_products where order_products.order_id = ?', [$order->id]);
+
+
+        return $this->successResponse(['order'=>$order,'products'=>$productsOrder, 'Order created successfully.']);
 
         }
         return response()->json([

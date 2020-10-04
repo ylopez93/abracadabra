@@ -48,10 +48,23 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('product/update/{product}','api\ProductController@update');
     Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
 
+    //UserPorduct_Cart
+    Route::get('/cart/{userId}','api\UserProductController@getContent');
+    Route::post('/cart/add','api\UserProductController@addItem');
+    Route::get('/cart/count/{userId}','api\UserProductController@countCart');
+    Route::get('/cart/totalprice/{userId}','api\UserProductController@TotalPricetCart');
+    Route::put('/cart/update','api\UserProductController@updateCart');
+    Route::post('/cart/delete','api\UserProductController@deleteProductCart');
+    Route::post('/cart/clear','api\UserProductController@clearCart');
+
+
     //Category
     Route::get('category/products','api\ProductCategoryController@categoryProductAll');
     Route::resource('category','api\ProductCategoryController');
     Route::post('category/update/{category}','api\ProductCategoryController@update');
+    Route::get('category_modulo/{module}','api\ProductCategoryController@getCategoryModule');
+    Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
+
 
     //Messenger
     Route::resource('messenger','api\MessengerController');

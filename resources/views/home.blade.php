@@ -2,22 +2,22 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Dashboard') }}</div>
+    < div class="row justify-content-center">
+        @forelse ($products as $item)
+         <div class="col-4 border p-5 nt-5 text-conter">
+             <h1>{{$item->name}}</h1>
+             <p>{{$item->price}}</p>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+             <form action="{{route('cart.add')}}">
 
-                    {{ __('You are logged in!') }}
-                </div>
-            </div>
-        </div>
+             </form>
+
+         </div>
+
+        @empty
+
+         @endforelse
+
     </div>
 </div>
 @endsection

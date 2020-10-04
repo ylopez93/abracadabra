@@ -2,85 +2,138 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
+use App\Product;
 use App\UserProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
 
-class UserProductController extends Controller
+class UserProductController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getContent($userId)
     {
-        //
+        $productsCar = DB::select('select products.name as product, user_products.product_id,products.price,
+        products.price*user_products.qty as subtotal,product_images.name as image,user_products.qty
+        from user_products
+        INNER JOIN users ON users.id = user_products.user_id
+        INNER JOIN products ON products.id = user_products.product_id
+        INNER JOIN product_images ON products.id = product_images.product_image_id
+        where user_products.user_id = ? AND user_products.deleted_at IS NULL',[$userId]);
+
+        return $this->successResponse([$productsCar,'Products retrieved successfully.']);
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+    //parametros: idUser
+    //agregar producto al carrito
+
+     public function addItem(Request $request){
+
+        $userId = auth()->user()->id;
+        $product = Product::findOrFail($request->product_id);
+        $productExist = DB::select('select user_products.product_id from user_products where user_products.product_id = ?', [$request->product_id]);
+
+        if($productExist == null){
+
+            $itemCart = new UserProduct();
+            $itemCart->user_id = $userId;
+            $itemCart->product_id = $product->id;
+            $itemCart->qty = 1;
+            $itemCart->qty_unit = $itemCart->qty_unit + $itemCart->qty;
+            $itemCart->unit_price = $product->price;
+            $itemCart->total_price = $itemCart->total_price + $itemCart->unit_price;
+            $itemCart->save();
+
+            $product->stock = $product->stock - $itemCart->qty_unit;
+            $product->save();
+
+        }
+        $countCart = $this->countCart($userId);
+
+        return $this->successResponse([$countCart,'Products retrieved successfully.']);
+
+     }
+
+     //cantidad de productos del carrito
+
+     public function countCart($userId){
+
+         $countCart = DB::table('user_products')
+                 ->select(DB::raw('sum(qty) as count'))
+                 ->where('user_products.user_id', '=', $userId)
+                 ->get();
+
+        return $this->successResponse([$countCart,'Products retrieved successfully.']);
+     }
+
+
+     //precio total de todos los productos del cariito
+
+     public function TotalPricetCart($userId){
+
+        $TotalPrice = DB::table('user_products')
+                ->select(DB::raw('sum(total_price) as count'))
+                ->where('user_products.user_id', '=', $userId)
+                ->get();
+
+       return $this->successResponse([$TotalPrice,'Products retrieved successfully.']);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+
+    // actualizar carrito
+
+     public function updateCart( Request $request){
+
+
+        $productExist = UserProduct::findOrFail($request->userproduct_id);
+        $product = Product::findOrFail($productExist->product_id);
+        $stock = $product->stock;
+        $qty_old = $productExist->qty_unit;
+
+            if($request->qty_unit < $stock){
+
+            $productExist->qty_unit = $request->qty_unit;
+            $productExist->total_price = $productExist->unit_price * $request->qty_unit;
+            $productExist->save();
+
+            $product->stock = $product->stock + $qty_old - $productExist->qty_unit;
+            $product->save();
+
+            }else {
+
+                return $this->errorResponse(['Please check your qty is more than product stock']);
+            }
+
+            return $this->successResponse([$productExist,'Cart update successfully.']);
+
+     }
+
+
+
+
+     // eliminar productos del carrito
+
+     public function deleteProductCart(Request $request)
     {
-        //
+        $userproduct = UserProduct::findOrFail($request->userproduct_id);
+        $userproduct->delete();
+
+        return $this->successResponse('Product deleted successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\UserProduct  $userProduct
-     * @return \Illuminate\Http\Response
-     */
-    public function show(UserProduct $userProduct)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\UserProduct  $userProduct
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(UserProduct $userProduct)
-    {
-        //
-    }
+    //eliminar carrito
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\UserProduct  $userProduct
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, UserProduct $userProduct)
-    {
-        //
-    }
+    public function clearCart(Request $request){
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\UserProduct  $userProduct
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(UserProduct $userProduct)
-    {
-        //
+        $userId = auth()->user()->id;
+        DB::delete('delete from user_products where user_id = ?',[$userId]);
+        return $this->successResponse('Cart empty successfully.');
     }
 }

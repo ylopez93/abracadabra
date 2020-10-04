@@ -15,6 +15,10 @@ class CreateUserProductsTable extends Migration
     {
         Schema::create('user_products', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->integer('qty')->default('1');
+            $table->integer('qty_unit');
+            $table->double('unit_price', 8, 2);
+            $table->double('total', 8, 2);
             $table->timestamps();
             $table->softDeletes();
         });

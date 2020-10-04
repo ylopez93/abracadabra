@@ -84,6 +84,7 @@ class JWTAuthController extends Controller
 
             $jwt_token = Auth::fromUser($user,$payloadable);
             $user = Auth::authenticate($request->token);
+
             return  response()->json([
                 'status' => 'Se ha logueado correctamente',
                 'token' => $jwt_token,
