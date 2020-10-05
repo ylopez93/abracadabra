@@ -55,7 +55,7 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::get('/cart/totalprice/{userId}','api\UserProductController@TotalPricetCart');
     Route::put('/cart/update','api\UserProductController@updateCart');
     Route::post('/cart/delete','api\UserProductController@deleteProductCart');
-    Route::post('/cart/clear','api\UserProductController@clearCart');
+    Route::get('/cart/clear/{userId}','api\OrderController@clearCart');
 
 
     //Category

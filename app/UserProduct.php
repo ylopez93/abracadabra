@@ -33,4 +33,5 @@ class UserProduct extends Model
     public function getPrice(){
         return $this->qty * $this->unit_price;
     }
+
 }

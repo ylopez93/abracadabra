@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\api;
 
 use App\Order;
+use App\UserProduct;
+use App\OrderProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderPost;
 use App\Http\Controllers\api\ApiResponseController;
-use App\OrderProduct;
-use App\UserProduct;
+use App\Http\Controllers\api\UserProductController;
+
 
 class OrderController extends ApiResponseController
 {
@@ -51,6 +53,7 @@ class OrderController extends ApiResponseController
         $validator = $request->validate($v_order->rules());
         if($validator){
            $order = new Order();
+           //gnerar codigo de la orden...
            $order->code = $request['code'];
            $order->user_name = $request['user_name'];
            $order->user_phone = $request['user_phone'];
@@ -70,8 +73,6 @@ class OrderController extends ApiResponseController
            $order->transportation_cost = $request['transportation_cost'];
            $order->save();
 
-           // inserto una relacion de orderProduct pq aki vienen el listado de productos que corresponde a la orden
-
            $Productos = UserProduct::select('user_products.*')
                     ->where('user_id',$order->user_id)
                     ->whereNull('deleted_at')
@@ -86,9 +87,12 @@ class OrderController extends ApiResponseController
                         $order_product->total = $producto->total_price;
                         $order_product->save();
 
+                        UserProductController::deleteProductCart($producto->id);
+
                     }
 
             $productsOrder = DB::select('select order_products.* from order_products where order_products.order_id = ?', [$order->id]);
+
 
 
         return $this->successResponse(['order'=>$order,'products'=>$productsOrder, 'Order created successfully.']);
@@ -99,6 +103,8 @@ class OrderController extends ApiResponseController
         ], 201);
 
     }
+
+
 
     /**
      * Display the specified resource.

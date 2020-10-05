@@ -19,7 +19,7 @@ class UserProductController extends ApiResponseController
     public function getContent($userId)
     {
         $productsCar = DB::select('select products.name as product, user_products.product_id,products.price,
-        products.price*user_products.qty as subtotal,product_images.name as image,user_products.qty
+        user_products.total_price,product_images.name as image,user_products.qty,user_products.id,user_products.qty_unit
         from user_products
         INNER JOIN users ON users.id = user_products.user_id
         INNER JOIN products ON products.id = user_products.product_id
@@ -36,8 +36,8 @@ class UserProductController extends ApiResponseController
      public function addItem(Request $request){
 
         $userId = auth()->user()->id;
-        $product = Product::findOrFail($request->product_id);
-        $productExist = DB::select('select user_products.product_id from user_products where user_products.product_id = ?', [$request->product_id]);
+        $product = Product::findOrFail($request->id);
+        $productExist = DB::select('select user_products.product_id from user_products where user_products.product_id = ?', [$request->id]);
 
         if($productExist == null){
 
@@ -53,7 +53,10 @@ class UserProductController extends ApiResponseController
             $product->stock = $product->stock - $itemCart->qty_unit;
             $product->save();
 
+        } else {
+            return $this->successResponse(['error']);
         }
+
         $countCart = $this->countCart($userId);
 
         return $this->successResponse([$countCart,'Products retrieved successfully.']);
@@ -91,7 +94,7 @@ class UserProductController extends ApiResponseController
      public function updateCart( Request $request){
 
 
-        $productExist = UserProduct::findOrFail($request->userproduct_id);
+        $productExist = UserProduct::findOrFail($request->id);
         $product = Product::findOrFail($productExist->product_id);
         $stock = $product->stock;
         $qty_old = $productExist->qty_unit;
@@ -114,19 +117,13 @@ class UserProductController extends ApiResponseController
 
      }
 
+      // eliminar productos del carrito
 
-
-
-     // eliminar productos del carrito
-
-     public function deleteProductCart(Request $request)
+    public static function deleteProductCart( Request $request)
     {
-        $userproduct = UserProduct::findOrFail($request->userproduct_id);
+        $userproduct = UserProduct::findOrFail($request->id);
         $userproduct->delete();
-
-        return $this->successResponse('Product deleted successfully.');
     }
-
 
     //eliminar carrito
 
