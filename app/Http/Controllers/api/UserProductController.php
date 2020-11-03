@@ -24,22 +24,22 @@ class UserProductController extends ApiResponseController
         INNER JOIN users ON users.id = user_products.user_id
         INNER JOIN products ON products.id = user_products.product_id
         INNER JOIN product_images ON products.id = product_images.product_image_id
-        where user_products.user_id = ? AND user_products.deleted_at IS NULL',[$userId]);
+        where user_products.user_id = ? AND user_products.deleted_at IS NULL', [$userId]);
 
-        return $this->successResponse([$productsCar,'Products retrieved successfully.']);
-
+        return $this->successResponse([$productsCar, 'Products retrieved successfully.']);
     }
 
     //parametros: idUser
     //agregar producto al carrito
 
-     public function addItem(Request $request){
+    public function addItem(Request $request)
+    {
 
         $userId = auth()->user()->id;
         $product = Product::findOrFail($request->id);
-        $productExist = DB::select('select user_products.product_id from user_products where user_products.product_id = ?', [$request->id]);
+        $productExist = DB::select('select user_products.product_id from user_products where user_products.deleted_at IS NULL AND user_products.product_id = ?', [$request->id]);
 
-        if($productExist == null){
+        if ($productExist == null) {
 
             $itemCart = new UserProduct();
             $itemCart->user_id = $userId;
@@ -52,54 +52,62 @@ class UserProductController extends ApiResponseController
 
             $product->stock = $product->stock - $itemCart->qty_unit;
             $product->save();
-
         } else {
             return $this->successResponse(['error']);
         }
 
         $countCart = $this->countCart($userId);
 
-        return $this->successResponse([$countCart,'Products retrieved successfully.']);
+        return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+    }
 
-     }
+    //cantidad de productos del carrito
 
-     //cantidad de productos del carrito
+    public function countCart($userId)
+    {
 
-     public function countCart($userId){
+        $countCart = DB::table('user_products')
+            ->select(DB::raw('sum(qty) as count'))
+            ->where('user_products.user_id', '=', $userId)
+            ->whereNull('deleted_at')
+            ->get();
 
-         $countCart = DB::table('user_products')
-                 ->select(DB::raw('sum(qty) as count'))
-                 ->where('user_products.user_id', '=', $userId)
-                 ->get();
+        if($countCart[0]->count == null  ){
+            $countCart[0]->count = 0;
+            return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+        }
 
-        return $this->successResponse([$countCart,'Products retrieved successfully.']);
-     }
+        return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+    }
 
 
-     //precio total de todos los productos del cariito
+    //precio total de todos los productos del cariito
 
-     public function TotalPricetCart($userId){
+    public function TotalPricetCart($userId)
+    {
 
         $TotalPrice = DB::table('user_products')
-                ->select(DB::raw('sum(total_price) as count'))
-                ->where('user_products.user_id', '=', $userId)
-                ->get();
+            ->select(DB::raw('sum(total_price) as count'))
+            ->where('user_products.user_id', '=', $userId)
+            ->whereNull('deleted_at')
+            ->get();
 
-       return $this->successResponse([$TotalPrice,'Products retrieved successfully.']);
+        return $this->successResponse([$TotalPrice, 'Products retrieved successfully.']);
     }
 
 
     // actualizar carrito
 
-     public function updateCart( Request $request){
-
-
+    public function updateCart(Request $request)
+    {
         $productExist = UserProduct::findOrFail($request->id);
         $product = Product::findOrFail($productExist->product_id);
         $stock = $product->stock;
         $qty_old = $productExist->qty_unit;
 
-            if($request->qty_unit < $stock){
+        $posible_product = $qty_old + $stock;
+
+        if ($posible_product >= $request->qty_unit) {
 
             $productExist->qty_unit = $request->qty_unit;
             $productExist->total_price = $productExist->unit_price * $request->qty_unit;
@@ -108,29 +116,29 @@ class UserProductController extends ApiResponseController
             $product->stock = $product->stock + $qty_old - $productExist->qty_unit;
             $product->save();
 
-            }else {
+        } else {
 
-                return $this->errorResponse(['Please check your qty is more than product stock']);
-            }
+            return $this->successResponse(['Por favor revise su cantidad a actualizar, es mayor que el producto disponible: '.$product->stock]);
+        }
 
-            return $this->successResponse([$productExist,'Cart update successfully.']);
-
-     }
-
-      // eliminar productos del carrito
-
-    public static function deleteProductCart( Request $request)
-    {
-        $userproduct = UserProduct::findOrFail($request->id);
-        $userproduct->delete();
+        return $this->successResponse([$productExist, 'Cantidad Actualizada.']);
     }
 
     //eliminar carrito
 
-    public function clearCart(Request $request){
-
+    public function clearCart(Request $request)
+    {
         $userId = auth()->user()->id;
-        DB::delete('delete from user_products where user_id = ?',[$userId]);
+        DB::delete('delete from user_products where user_id = ?', [$userId]);
         return $this->successResponse('Cart empty successfully.');
+    }
+
+    public function deleteProductCart(Request $request)
+    {
+        $product = Product::findOrFail($request->product_id);
+        $product->stock += $request->qty_unit;
+        $product->save();
+        $userproduct = UserProduct::findOrFail($request->id);
+        $userproduct->delete();
     }
 }

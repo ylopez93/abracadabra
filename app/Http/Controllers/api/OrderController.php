@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Order;
 use App\UserProduct;
 use App\OrderProduct;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -23,11 +24,30 @@ class OrderController extends ApiResponseController
     public function index()
     {
         $orders = Order::
-        join('messengers','messengers.id','=','orders.messenger_id')->
-        join('users','users.id','=','orders.user_id')->
-        select('orders.*','users.*','messengers.*')->
-        orderBy('orders.created_at','desc')->paginate(10);
-        return $this->successResponse([$orders,'Orders retrieved successfully.']);
+        join('messengers', 'messengers.id', '=', 'orders.messenger_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
+        ->select('orders.*', 'users.*', 'messengers.*')
+        ->orderBy('orders.created_at', 'desc')
+        ->whereNull('orders.deleted_at')
+        ->whereNull('messengers.deleted_at')
+        ->get();
+        return $this->successResponse([$orders, 'Orders retrieved successfully.']);
+    }
+
+
+    public function getOrders($userId)
+    {
+        $orders = DB::select('select orders.*
+        from orders
+        INNER JOIN users ON users.id = orders.user_id
+        where orders.user_id = ? AND orders.deleted_at IS NULL', [$userId]);
+
+        return $this->successResponse([$orders, 'Products retrieved successfully.']);
+    }
+
+    public function orderProduct(Order $order)
+    {
+        return $this->successResponse(["order"=> $order,"product"=> $order->product()->paginate(10)]);
     }
 
     /**
@@ -51,59 +71,63 @@ class OrderController extends ApiResponseController
 
         $v_order = new StoreOrderPost();
         $validator = $request->validate($v_order->rules());
-        if($validator){
-           $order = new Order();
-           //gnerar codigo de la orden...
-           $order->code = $request['code'];
-           $order->user_name = $request['user_name'];
-           $order->user_phone = $request['user_phone'];
-           $order->user_address = $request['user_address'];
-           $order->pickup_date = $request['pickup_date'];
-           $order->pickup_time_from = $request['pickup_time_from'];
-           $order->pickup_time_to = $request['pickup_time_to'];
-           $order->delivery_time_to = $request['delivery_time_to'];
-           $order->delivery_time_from = $request['delivery_time_from'];
-           $order->message = $request['message'];
-           $order->state = 'new';
-           $order->payment_type = 'cash';
-           $order->payment_state = 'undone';
-           $order->delivery_type = 'standard';
-           $order->messenger_id = $request['messenger_id'];
-           $order->user_id = $request['user_id'];
-           $order->transportation_cost = $request['transportation_cost'];
-           $order->save();
+        $cadena = Str::random(5);
+        if ($validator) {
+            $order = new Order();
+            $order->code = 'ABRA' . $cadena;
+            $order->user_name = $request['user_name'];
+            $order->user_phone = $request['user_phone'];
+            $order->user_address = $request['user_address'];
+            $order->pickup_date = $request['pickup_date'];
+            $order->pickup_time_from = $request['pickup_time_from'];
+            $order->pickup_time_to = $request['pickup_time_to'];
+            $order->delivery_time_to = $request['delivery_time_to'];
+            $order->delivery_time_from = $request['delivery_time_from'];
+            $order->message = $request['message'];
+            $order->state = 'nueva';
+            $order->payment_type = 'cash';
+            $order->payment_state = 'undone';
+            $order->delivery_type = 'standard';
+            $order->messenger_id = $request['messenger_id'];
+            $order->user_id = $request['user_id'];
+            $order->transportation_cost = $request['transportation_cost'];
+            $order->save();
 
-           $Productos = UserProduct::select('user_products.*')
-                    ->where('user_id',$order->user_id)
-                    ->whereNull('deleted_at')
-                    ->get();
+            $Productos = UserProduct::select('user_products.*')
+                ->where('user_id', $order->user_id)
+                ->whereNull('deleted_at')
+                ->get();
 
-                    foreach ($Productos as $producto) {
+            foreach ($Productos as $producto) {
 
-                        $order_product = new OrderProduct();
-                        $order_product->product_id = $producto->product_id;
-                        $order_product->order_id = $order->id;
-                        $order_product->quantity = $producto->qty_unit;
-                        $order_product->total = $producto->total_price;
-                        $order_product->save();
+                $order_product = new OrderProduct();
+                $order_product->product_id = $producto->product_id;
+                $order_product->order_id = $order->id;
+                $order_product->quantity = $producto->qty_unit;
+                $order_product->total = $producto->total_price;
+                $order_product->save();
 
-                        UserProductController::deleteProductCart($producto->id);
-
-                    }
+                $this->deleteProductCart($producto->id);
+            }
 
             $productsOrder = DB::select('select order_products.* from order_products where order_products.order_id = ?', [$order->id]);
 
 
 
-        return $this->successResponse(['order'=>$order,'products'=>$productsOrder, 'Order created successfully.']);
-
+            return $this->successResponse(['order' => $order, 'products' => $productsOrder, 'Order created successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
-
     }
 
+    // eliminar productos del carrito
+
+    public function deleteProductCart($id)
+    {
+        $userproduct = UserProduct::findOrFail($id);
+        $userproduct->delete();
+    }
 
 
     /**
@@ -116,11 +140,11 @@ class OrderController extends ApiResponseController
     {
         $order = Order::find($id);
 
-        if(is_null($order)){
+        if (is_null($order)) {
             return $this->errorResponse('Order not found.');
         }
 
-        return $this->successResponse([$order,'Product retrieved successfully.']);
+        return $this->successResponse([$order, 'Product retrieved successfully.']);
     }
 
     /**
@@ -145,36 +169,21 @@ class OrderController extends ApiResponseController
     {
         $v_order = new StoreOrderPost();
         $validator = $request->validate($v_order->rules());
-        if($validator){
-           $order->code = $request['code'];
-           $order->user_name = $request['user_name'];
-           $order->user_phone = $request['user_phone'];
-           $order->user_address = $request['user_address'];
-           $order->pickup_date = $request['pickup_date'];
-           $order->pickup_time_from = $request['pickup_time_from'];
-           $order->pickup_time_to = $request['pickup_time_to'];
-           $order->delivery_time_to = $request['delivery_time_to'];
-           $order->delivery_time_from = $request['delivery_time_from'];
-           $order->message = $request['message'];
-           $order->state = 'new';
-           $order->payment_type = 'cash';
-           $order->payment_state = 'undone';
-           $order->delivery_type = 'standard';
-           $order->messenger_id = $request['messenger_id'];
-           $order->user_id = $request['user_id'];
-           $order->transportation_cost = $request['transportation_cost'];
+        if ($validator) {
 
-           // modifico una relacion de orderProduct pq aki vienen el listado de productos que corresponde a la orden
+            $order->delivery_time_to = $request['delivery_time_to'];
+            $order->delivery_time_from = $request['delivery_time_from'];
+            $order->state = $request['state'];
+            $order->payment_state = 'undone';
+            $order->messenger_id = $request['messenger_id'];
+            $order->transportation_cost = $request['transportation_cost'];
+            $order->save();
 
-           $order->save();
-
-        return $this->successResponse([$order, 'Order created successfully.']);
-
+            return $this->successResponse(['Order update successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
-
     }
 
     /**

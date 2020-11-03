@@ -51,12 +51,14 @@ class ProductCategoryController extends ApiResponseController
     {
         $category = ProductCategory::findOrFail($id);
 
-        $categoryProducts = ProductCategory::join('products','products.product_category_id','=','product_categories.id')
+            $categoryProducts = ProductCategory::join('products','products.product_category_id','=','product_categories.id')
                 ->join('product_images','product_images.product_image_id','=','products.id')
                 ->select('product_categories.name as category','product_categories.module','products.*','product_images.name as image')
                 ->where('product_categories.name',$category->name)
+                ->where('products.stock', '!=', '0')
                 ->whereNull('products.deleted_at')
                 ->get();
+
         return $this->successResponse([$categoryProducts,'Products retrieved successfully.']);
     }
 

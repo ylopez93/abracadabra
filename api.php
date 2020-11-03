@@ -66,8 +66,8 @@ Route::group(['middleware' => 'auth:api','CORS',
 
     Route::resource('category','api\ProductCategoryController');
     Route::post('category/update/{category}','api\ProductCategoryController@update');
-    Route::get('productOrderByCategory','api\ProductCategoryController@categoryProduct');
-    Route::get('category/products/{category}','api\ProductCategoryController@categoryProductAll');
+    Route::get('product/{category}/category','api\ProductCategoryController@categoryProduct');
+    Route::get('category/products','api\ProductCategoryController@categoryProductAll');
 
     //Messenger
     Route::resource('messenger','api\MessengerController');
@@ -78,10 +78,6 @@ Route::group(['middleware' => 'auth:api','CORS',
 
     //Order
     Route::resource('order','api\OrderController');
-    Route::get('orderByUser/{userId}','api\OrderController@getOrders');
-    Route::get('orderProducts','api\OrderController@orderProduct');
-
-
 
     //Country
     Route::resource('country','api\CountryController');

@@ -24,8 +24,8 @@ class CreateOrderTable extends Migration
             $table->time('pickup_time_to')->nullable();
             $table->time('delivery_time_to')->nullable();
             $table->time('delivery_time_from')->nullable();
-            $table->string('message');
-            $table->enum('state', ['new', 'in_progress', 'delivered', 'cancel'])->default('new');
+            $table->string('message')->nullable();;
+            $table->enum('state', ['nueva', 'en_progreso','asignada','entregada', 'cancelada'])->default('nueva');
             $table->enum('payment_type', ['card', 'cash', 'paypal'])->default('cash');
             $table->enum('payment_state', ['done', 'undone', 'confirmed'])->default('undone');
             $table->enum('delivery_type', ['express','standard'])->default('standard');
