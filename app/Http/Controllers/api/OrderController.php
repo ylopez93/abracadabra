@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreOrderPut;
 use App\Http\Requests\StoreOrderPost;
 use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Controllers\api\UserProductController;
@@ -24,9 +25,28 @@ class OrderController extends ApiResponseController
     public function index()
     {
         $orders = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.id as user','users.name',
+        'users.email','users.rol_id','users.municipie_id')
+        ->orderBy('orders.created_at', 'desc')
+        ->whereNull('orders.deleted_at')
+        ->get();
+        return $this->successResponse([$orders, 'Orders retrieved successfully.']);
+    }
+
+    public function odersAsigned()
+    {
+        $orders = Order::
         join('messengers', 'messengers.id', '=', 'orders.messenger_id')
         ->join('users', 'users.id', '=', 'orders.user_id')
-        ->select('orders.*', 'users.*', 'messengers.*')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.id as user','users.name',
+        'users.email','users.rol_id','users.municipie_id','messengers.id as messenger','messengers.name as messenger name','messengers.surname',
+        'messengers.ci','messengers.phone','messengers.email as messenger email','messengers.address','messengers.vehicle_registration',
+        'messengers.image')
         ->orderBy('orders.created_at', 'desc')
         ->whereNull('orders.deleted_at')
         ->whereNull('messengers.deleted_at')
@@ -47,8 +67,10 @@ class OrderController extends ApiResponseController
 
     public function orderProduct(Order $order)
     {
-        return $this->successResponse(["order"=> $order,"product"=> $order->product()->paginate(10)]);
+        return $this->successResponse(["order"=> $order,"product"=> $order->orderProduct()->get()]);
     }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -81,11 +103,12 @@ class OrderController extends ApiResponseController
             $order->pickup_date = $request['pickup_date'];
             $order->pickup_time_from = $request['pickup_time_from'];
             $order->pickup_time_to = $request['pickup_time_to'];
+            $order->message = $request['message'];
+            $order->payment_type = $request['payment_type'];
+
             $order->delivery_time_to = $request['delivery_time_to'];
             $order->delivery_time_from = $request['delivery_time_from'];
-            $order->message = $request['message'];
             $order->state = 'nueva';
-            $order->payment_type = 'cash';
             $order->payment_state = 'undone';
             $order->delivery_type = 'standard';
             $order->messenger_id = $request['messenger_id'];
@@ -111,8 +134,6 @@ class OrderController extends ApiResponseController
             }
 
             $productsOrder = DB::select('select order_products.* from order_products where order_products.order_id = ?', [$order->id]);
-
-
 
             return $this->successResponse(['order' => $order, 'products' => $productsOrder, 'Order created successfully.']);
         }
@@ -141,7 +162,7 @@ class OrderController extends ApiResponseController
         $order = Order::find($id);
 
         if (is_null($order)) {
-            return $this->errorResponse('Order not found.');
+            return $this->successResponse('Order not found.');
         }
 
         return $this->successResponse([$order, 'Product retrieved successfully.']);
@@ -167,7 +188,7 @@ class OrderController extends ApiResponseController
      */
     public function update(Request $request, Order $order)
     {
-        $v_order = new StoreOrderPost();
+        $v_order = new StoreOrderPut();
         $validator = $request->validate($v_order->rules());
         if ($validator) {
 
@@ -179,7 +200,7 @@ class OrderController extends ApiResponseController
             $order->transportation_cost = $request['transportation_cost'];
             $order->save();
 
-            return $this->successResponse(['Order update successfully.']);
+            return $this->successResponse([$order,'Order update successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'

@@ -75,7 +75,7 @@ class MessengerController extends ApiResponseController
         $messenger = Messenger::find($id);
 
         if(is_null($messenger)){
-            return $this->errorResponse('Messenger  not found.');
+            return $this->successResponse('Messenger  not found.');
         }
 
         return $this->successResponse([$messenger,'Messenger retrieved successfully.']);

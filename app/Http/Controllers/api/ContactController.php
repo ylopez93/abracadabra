@@ -70,7 +70,7 @@ class ContactController extends ApiResponseController
         $contact = Contact::find($id);
 
         if(is_null($contact)){
-            return $this->errorResponse('Contact  not found.');
+            return $this->successResponse('Contact  not found.');
         }
 
         return $this->successResponse([$contact,'Contact retrieved successfully.']);

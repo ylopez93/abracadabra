@@ -71,7 +71,7 @@ class CountryController extends ApiResponseController
         $country = Country::find($id);
 
         if(is_null($country)){
-            return $this->errorResponse('Country  not found.');
+            return $this->successResponse('Country  not found.');
         }
 
         return $this->successResponse([$country,'Country retrieved successfully.']);

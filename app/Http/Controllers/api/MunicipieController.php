@@ -73,7 +73,7 @@ class MunicipieController extends ApiResponseController
         $municipie = Municipie::find($id);
 
         if(is_null($municipie)){
-            return $this->errorResponse('Municipie  not found.');
+            return $this->successResponse('Municipie  not found.');
         }
 
         return $this->successResponse([$municipie,'Municipie retrieved successfully.']);

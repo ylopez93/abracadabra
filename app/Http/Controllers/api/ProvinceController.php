@@ -72,7 +72,7 @@ class ProvinceController extends Controller
         $province = Province::find($id);
 
         if(is_null($province)){
-            return $this->errorResponse('Province  not found.');
+            return $this->successResponse('Province  not found.');
         }
 
         return $this->successResponse([$province,'Province retrieved successfully.']);

@@ -53,7 +53,7 @@ class UserProductController extends ApiResponseController
             $product->stock = $product->stock - $itemCart->qty_unit;
             $product->save();
         } else {
-            return $this->successResponse(['error']);
+            return $this->successResponse(['el producto ya esta en el carrito']);
         }
 
         $countCart = $this->countCart($userId);

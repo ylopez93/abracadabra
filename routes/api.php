@@ -32,8 +32,6 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('login', 'api\JWTAuthController@login');
     Route::get('category_modulo/{module}','api\ProductCategoryController@getCategoryModule');
     Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
-
-
 });
 
 Route::group(['middleware' => 'auth:api','CORS',
@@ -50,7 +48,6 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('product','api\ProductController');
     Route::post('product/update/{product}','api\ProductController@update');
 
-
     //UserPorduct_Cart
     Route::get('/cart/{userId}','api\UserProductController@getContent');
     Route::post('/cart/add','api\UserProductController@addItem');
@@ -65,9 +62,7 @@ Route::group(['middleware' => 'auth:api','CORS',
     //Category
 
     Route::resource('category','api\ProductCategoryController');
-    Route::post('category/update/{category}','api\ProductCategoryController@update');
-    Route::get('productOrderByCategory','api\ProductCategoryController@categoryProduct');
-    Route::get('category/products/{category}','api\ProductCategoryController@categoryProductAll');
+    Route::get('productOrderByCategory','api\ProductCategoryController@categoryProductAll');
 
     //Messenger
     Route::resource('messenger','api\MessengerController');
@@ -79,9 +74,8 @@ Route::group(['middleware' => 'auth:api','CORS',
     //Order
     Route::resource('order','api\OrderController');
     Route::get('orderByUser/{userId}','api\OrderController@getOrders');
-    Route::get('orderProducts','api\OrderController@orderProduct');
-
-
+    Route::get('orderProducts/{order}','api\OrderController@orderProduct');
+    Route::get('odersAsigned','api\OrderController@odersAsigned');
 
     //Country
     Route::resource('country','api\CountryController');

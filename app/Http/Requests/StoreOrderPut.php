@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreOrderPost extends FormRequest
+class StoreOrderPut extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,18 +25,13 @@ class StoreOrderPost extends FormRequest
     {
         return [
 
-        'user_name'=> 'required|max:255',
-        'user_phone'=> 'required|max:255',
-        'user_address'=> 'required|max:255',
-        'message'=> 'required|max:255',
-        'pickup_date' => 'required|date',
-        'pickup_time_from' => 'required',
-        'pickup_time_to' => 'required',
-        'message'=> 'required|max:255',
+        'delivery_time_to'=> 'required',
+        'delivery_time_from'=> 'required',
+        'state'=> 'required',
+        'payment_state'=> 'required',
+        'messenger_id' => 'required',
+        'transportation_cost' => 'required',
 
         ];
-
-
-
     }
 }

@@ -72,7 +72,7 @@ class ProductController extends ApiResponseController
             return $this->successResponse([ 'data'=>$product,'image' => $productimage,'message' =>'Product created successfully.']);
 
             }
-            return $this->errorResponse(['message' => 'Error al validar']);
+            return $this->successResponse(['message' => 'Error al validar']);
 
 
 
@@ -89,7 +89,7 @@ class ProductController extends ApiResponseController
         $product = Product::find($id);
 
         if(is_null($product)){
-            return $this->errorResponse('Product not found.');
+            return $this->successResponse('Product not found.');
         }
 
         return $this->successResponse([$product,'Product retrieved successfully.']);
@@ -150,7 +150,7 @@ class ProductController extends ApiResponseController
 
         return $this->successResponse([$product, 'Product updated successfully.']);
         }
-        return $this->errorResponse(['message' => 'Error al validar']);
+        return $this->successResponse(['message' => 'Error al validar']);
 
 
     }

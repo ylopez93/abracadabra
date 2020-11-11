@@ -30,30 +30,34 @@ class ProductCategoryController extends ApiResponseController
 
 
     public function categoryProductAll()
-
     {
-        //preguntarle a roilan que datos espscificos quiere que sean devueltos en la query
+
         $categories = ProductCategory::
         join('products','products.product_category_id','=','product_categories.id')->
-        select('product_categories.name','product_categories.module','product_categories.image','products.*')->
+        select('product_categories.id as category_id','product_categories.name as category',
+        'product_categories.module','product_categories.image','products.*')->
         orderBy('product_categories.name','desc')->paginate(10);
         return $this->successResponse([$categories,'Products retrieved successfully.']);
     }
 
-     public function getCategoryModule($module){
+
+    public function getCategoryModule($module){
 
         $categories = DB::select('select * from product_categories where product_categories.module = ?', [$module]);
 
         return $this->successResponse([$categories,' Categories retrieved successfully.']);
-     }
+    }
 
-     public function byCategoryProductAll($id)
+
+    public function byCategoryProductAll($id)
     {
         $category = ProductCategory::findOrFail($id);
 
-            $categoryProducts = ProductCategory::join('products','products.product_category_id','=','product_categories.id')
+            $categoryProducts = ProductCategory::
+                 join('products','products.product_category_id','=','product_categories.id')
                 ->join('product_images','product_images.product_image_id','=','products.id')
-                ->select('product_categories.name as category','product_categories.module','products.*','product_images.name as image')
+                ->select('product_categories.name as category','product_categories.module',
+                'products.*','product_images.name as image')
                 ->where('product_categories.name',$category->name)
                 ->where('products.stock', '!=', '0')
                 ->whereNull('products.deleted_at')
@@ -87,9 +91,12 @@ class ProductCategoryController extends ApiResponseController
            $productcategory->name = $request['name'];
            $productcategory->module = $request['module'];
 
+           if ($request->hasFile('image')) {
            $filename = time() .".". $request->image->extension();
            $request->image->move(public_path('images'),$filename);
            $productcategory->image = $filename;
+
+           }
 
            $productcategory->save();
 
@@ -114,7 +121,7 @@ class ProductCategoryController extends ApiResponseController
         $productcategory = ProductCategory::find($id);
 
         if(is_null($productcategory)){
-            return $this->errorResponse('Product Category not found.');
+            return $this->successResponse('Product Category not found.');
         }
 
         return $this->successResponse([$productcategory,'ProductProduct Category retrieved successfully.']);
