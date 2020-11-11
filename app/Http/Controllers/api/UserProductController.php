@@ -40,18 +40,28 @@ class UserProductController extends ApiResponseController
         $productExist = DB::select('select user_products.product_id from user_products where user_products.deleted_at IS NULL AND user_products.product_id = ?', [$request->id]);
 
         if ($productExist == null) {
+            if($product->stock != 0){
 
-            $itemCart = new UserProduct();
-            $itemCart->user_id = $userId;
-            $itemCart->product_id = $product->id;
-            $itemCart->qty = 1;
-            $itemCart->qty_unit = $itemCart->qty_unit + $itemCart->qty;
-            $itemCart->unit_price = $product->price;
-            $itemCart->total_price = $itemCart->total_price + $itemCart->unit_price;
-            $itemCart->save();
+                $itemCart = new UserProduct();
+                $itemCart->user_id = $userId;
+                $itemCart->product_id = $product->id;
+                $itemCart->qty = 1;
+                $itemCart->qty_unit = $itemCart->qty_unit + $itemCart->qty;
+                $itemCart->unit_price = $product->price;
+                $itemCart->total_price = $itemCart->total_price + $itemCart->unit_price;
+                $itemCart->save();
 
-            $product->stock = $product->stock - $itemCart->qty_unit;
-            $product->save();
+                $product->stock = $product->stock - $itemCart->qty_unit;
+                if($product->stock == 0){
+                    $product->state = 'archived';
+                    //enviar algun aviso de que el producto est agotado y cambio su estado
+                }
+                $product->save();
+
+            }else {
+                return $this->successResponse(['el producto no esta disponible']);
+            }
+
         } else {
             return $this->successResponse(['el producto ya esta en el carrito']);
         }
@@ -114,13 +124,17 @@ class UserProductController extends ApiResponseController
             $productExist->save();
 
             $product->stock = $product->stock + $qty_old - $productExist->qty_unit;
+            if($product->stock == 0){
+                $product->state = 'archived';
+                //enviar algun aviso de que el producto est agotado y cambio su estado
+            }
             $product->save();
 
         } else {
 
             return $this->successResponse(['Por favor revise su cantidad a actualizar, es mayor que el producto disponible: '.$product->stock]);
         }
-
+$product->state = 'archived';
         return $this->successResponse([$productExist, 'Cantidad Actualizada.']);
     }
 
@@ -136,9 +150,15 @@ class UserProductController extends ApiResponseController
     public function deleteProductCart(Request $request)
     {
         $product = Product::findOrFail($request->product_id);
-        $product->stock += $request->qty_unit;
-        $product->save();
         $userproduct = UserProduct::findOrFail($request->id);
+
+        $product->stock = $product->stock + $userproduct->qty_unit;
+        if($product->stock != 0){
+           $product->state = 'published';
+        }
+        $product->save();
         $userproduct->delete();
-    }
+
+
+  }
 }

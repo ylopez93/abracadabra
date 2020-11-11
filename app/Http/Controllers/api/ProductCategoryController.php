@@ -59,7 +59,7 @@ class ProductCategoryController extends ApiResponseController
                 ->select('product_categories.name as category','product_categories.module',
                 'products.*','product_images.name as image')
                 ->where('product_categories.name',$category->name)
-                ->where('products.stock', '!=', '0')
+                ->where('products.state', '=', 'published')
                 ->whereNull('products.deleted_at')
                 ->get();
 
