@@ -31,7 +31,6 @@ class ProductCategoryController extends ApiResponseController
 
     public function categoryProductAll()
     {
-
         $categories = ProductCategory::
         join('products','products.product_category_id','=','product_categories.id')->
         select('product_categories.id as category_id','product_categories.name as category',

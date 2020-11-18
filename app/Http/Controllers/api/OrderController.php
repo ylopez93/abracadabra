@@ -32,7 +32,10 @@ class OrderController extends ApiResponseController
         'users.email','users.rol_id','users.municipie_id')
         ->orderBy('orders.created_at', 'desc')
         ->whereNull('orders.deleted_at')
+        ->whereNull('orders.messenger_id')
         ->get();
+
+
         return $this->successResponse([$orders, 'Orders retrieved successfully.']);
     }
 
@@ -67,7 +70,23 @@ class OrderController extends ApiResponseController
 
     public function orderProduct(Order $order)
     {
-        return $this->successResponse(["order"=> $order,"product"=> $order->orderProduct()->get()]);
+        $products = OrderProduct::
+        join('products','products.id','=','order_products.product_id')->
+        join('orders','orders.id','=','order_products.order_id')->
+        select('products.name as product','order_products.quantity',
+        'order_products.total')->
+        where('orders.id',[$order->id])->
+        orderBy('order_products.created_at','desc')->
+        whereNull('orders.deleted_at')->
+        whereNull('products.deleted_at')->
+        get();
+
+        $order = DB::select('select orders.*
+        from orders
+        where orders.id = ? AND orders.deleted_at IS NULL', [$order->id]);
+
+        return $this->successResponse([$order,$products,'Products retrieved successfully.']);
+
     }
 
 
@@ -100,16 +119,15 @@ class OrderController extends ApiResponseController
             $order->user_name = $request['user_name'];
             $order->user_phone = $request['user_phone'];
             $order->user_address = $request['user_address'];
-            $order->pickup_date = $request['pickup_date'];
             $order->pickup_time_from = $request['pickup_time_from'];
             $order->pickup_time_to = $request['pickup_time_to'];
             $order->message = $request['message'];
-            $order->payment_type = $request['payment_type'];
+           // $order->payment_type = $request['payment_type'];
 
             $order->delivery_time_to = $request['delivery_time_to'];
             $order->delivery_time_from = $request['delivery_time_from'];
             $order->state = 'nueva';
-            $order->payment_state = 'undone';
+           // $order->payment_state = 'undone';
             $order->delivery_type = 'standard';
             $order->messenger_id = $request['messenger_id'];
             $order->user_id = $request['user_id'];
@@ -188,12 +206,14 @@ class OrderController extends ApiResponseController
      */
     public function update(Request $request, Order $order)
     {
+
         $v_order = new StoreOrderPut();
         $validator = $request->validate($v_order->rules());
         if ($validator) {
 
             $order->delivery_time_to = $request['delivery_time_to'];
             $order->delivery_time_from = $request['delivery_time_from'];
+            $order->pickup_date = $request['pickup_date'];
             $order->state = $request['state'];
             $order->payment_state = 'undone';
             $order->messenger_id = $request['messenger_id'];
