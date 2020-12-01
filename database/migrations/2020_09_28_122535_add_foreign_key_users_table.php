@@ -20,11 +20,7 @@ class AddForeignKeyUsersTable extends Migration
                  ->onDelete('cascade')
                  ->onUpdate('cascade');
 
-            $table->bigInteger('municipie_id')->unsigned();
-            $table->foreign('municipie_id')
-                 ->references('id')->on('municipies')
-                 ->onDelete('cascade')
-                 ->onUpdate('cascade');
+            
         });
     }
 

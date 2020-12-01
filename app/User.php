@@ -78,10 +78,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Rol::class);
     }
 
-    public function municipio()
-    {
-        return $this->belongsTo(Municipie::class);
-    }
+    
 
     public function userProduct(){
         return $this->hasMany(UserProduct::class);

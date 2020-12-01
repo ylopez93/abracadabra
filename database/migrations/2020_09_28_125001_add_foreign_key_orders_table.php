@@ -25,6 +25,12 @@ class AddForeignKeyOrdersTable extends Migration
                  ->references('id')->on('users')
                  ->onDelete('cascade')
                  ->onUpdate('cascade');
+
+            $table->bigInteger('municipie_id')->unsigned();
+            $table->foreign('municipie_id')
+                ->references('id')->on('municipies')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
         });
     }
 
@@ -38,6 +44,7 @@ class AddForeignKeyOrdersTable extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign('orders_messenger_id_foreign');
             $table->dropForeign('orders_user_id_foreign');
+            $table->dropForeign('orders_municipie_id_foreign');
         });
     }
 }

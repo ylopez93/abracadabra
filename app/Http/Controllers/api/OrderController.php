@@ -13,7 +13,7 @@ use App\Http\Requests\StoreOrderPut;
 use App\Http\Requests\StoreOrderPost;
 use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Controllers\api\UserProductController;
-
+use App\Messenger;
 
 class OrderController extends ApiResponseController
 {
@@ -29,7 +29,7 @@ class OrderController extends ApiResponseController
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
         'orders.payment_type','orders.payment_state','orders.transportation_cost','users.id as user','users.name',
-        'users.email','users.rol_id','users.municipie_id')
+        'users.email','users.rol_id')
         ->orderBy('orders.created_at', 'desc')
         ->whereNull('orders.deleted_at')
         ->whereNull('orders.messenger_id')
@@ -44,10 +44,11 @@ class OrderController extends ApiResponseController
         $orders = Order::
         join('messengers', 'messengers.id', '=', 'orders.messenger_id')
         ->join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
-        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.id as user','users.name',
-        'users.email','users.rol_id','users.municipie_id','messengers.id as messenger','messengers.name as messenger name','messengers.surname',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.name as user','users.id',
+        'users.email','rols.name','messengers.id as messenger','messengers.name as messenger name','messengers.surname',
         'messengers.ci','messengers.phone','messengers.email as messenger email','messengers.address','messengers.vehicle_registration',
         'messengers.image')
         ->orderBy('orders.created_at', 'desc')
@@ -57,39 +58,78 @@ class OrderController extends ApiResponseController
         return $this->successResponse([$orders, 'Orders retrieved successfully.']);
     }
 
+    public function ordersFinished($userId){
+        $orders = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.name as user','users.id',
+        'users.email','rols.name')
+        ->where('orders.user_id',[$userId])
+        ->where('orders.state','=','cancelada')
+        ->orWhere('orders.state','=','entregada')
+        ->whereNull('orders.deleted_at')
+        ->get();
 
-    public function getOrders($userId)
-    {
-        $orders = DB::select('select orders.*
-        from orders
-        INNER JOIN users ON users.id = orders.user_id
-        where orders.user_id = ? AND orders.deleted_at IS NULL', [$userId]);
+        return $this->successResponse([$orders,'orders retrieved successfully.']);
+    }
 
-        return $this->successResponse([$orders, 'Products retrieved successfully.']);
+    public function ordersActive($userId){
+        $orders = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.name as user','users.id',
+        'users.email','rols.name')
+        ->where('orders.user_id',[$userId])
+        ->where('orders.state','=','nueva')
+        ->orWhere('orders.state','=','en_progreso')
+        ->orWhere('orders.state','=','asignada')
+        ->whereNull('orders.deleted_at')
+        ->get();
+
+        return $this->successResponse([$orders,'orders retrieved successfully.']);
     }
 
     public function orderProduct(Order $order)
     {
+        $id= $order->id;
+
         $products = OrderProduct::
         join('products','products.id','=','order_products.product_id')->
         join('orders','orders.id','=','order_products.order_id')->
         select('products.name as product','order_products.quantity',
         'order_products.total')->
-        where('orders.id',[$order->id])->
+        where('orders.id',[$id])->
         orderBy('order_products.created_at','desc')->
         whereNull('orders.deleted_at')->
         whereNull('products.deleted_at')->
         get();
 
-        $order = DB::select('select orders.*
-        from orders
-        where orders.id = ? AND orders.deleted_at IS NULL', [$order->id]);
+        $order = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','orders.transportation_cost','users.name as user','users.id',
+        'users.email','rols.name')
+        ->where('orders.id',[$id])
+        ->whereNull('orders.deleted_at')
+        ->get();
 
-        return $this->successResponse([$order,$products,'Products retrieved successfully.']);
+
+        $messenger = Messenger::
+        join('orders','orders.messenger_id','=','messengers.id')->
+        select('messengers.*')->
+        where('orders.id',[$id])->
+        whereNotNull('orders.messenger_id')->
+        get();
+
+        return $this->successResponse([$order,$products,$messenger,'Products retrieved successfully.']);
 
     }
-
-
 
     /**
      * Show the form for creating a new resource.
@@ -98,7 +138,7 @@ class OrderController extends ApiResponseController
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -122,6 +162,7 @@ class OrderController extends ApiResponseController
             $order->pickup_time_from = $request['pickup_time_from'];
             $order->pickup_time_to = $request['pickup_time_to'];
             $order->message = $request['message'];
+            $order->municipie_id = 3;
            // $order->payment_type = $request['payment_type'];
 
             $order->delivery_time_to = $request['delivery_time_to'];

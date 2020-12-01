@@ -20,7 +20,7 @@ class Municipie extends Model
         return $this->belongsTo(Province::class);
    }
 
-   public function user(){
+   public function orders(){
     return $this->hasMany(User::class);
 }
 }

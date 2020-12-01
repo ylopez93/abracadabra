@@ -29,7 +29,9 @@ class Order extends Model
         'delivery_type',
         'messenger_id',
         'user_id',
+        'municipie_id',
         'transportation_cost'
+
     ];
 
     protected $hidden = ['created_at','updated_at'];
@@ -48,5 +50,11 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function municipio()
+    {
+        return $this->belongsTo(Municipie::class);
+    }
+
 
 }

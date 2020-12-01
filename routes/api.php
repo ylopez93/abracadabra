@@ -5,6 +5,7 @@ use Tymon\JWTAuth\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,7 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('login', 'api\JWTAuthController@login');
     Route::get('category_modulo/{module}','api\ProductCategoryController@getCategoryModule');
     Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
+    Route::post('sendEmail', 'api\MailController@sendEmail');
 });
 
 Route::group(['middleware' => 'auth:api','CORS',
@@ -43,6 +45,7 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('logout', 'api\JWTAuthController@logout');
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
+    Route::post('resetPassword', 'api\PasswordResetRequestController@sendEmail');
 
     //Products
     Route::resource('product','api\ProductController');
@@ -58,9 +61,7 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('/cart/delete/','api\OrderController@deleteProductCart');
     Route::post('/cart/delete/','api\UserProductController@deleteProductCart');
 
-
     //Category
-
     Route::resource('category','api\ProductCategoryController');
     Route::get('productOrderByCategory','api\ProductCategoryController@categoryProductAll');
 
@@ -73,9 +74,14 @@ Route::group(['middleware' => 'auth:api','CORS',
 
     //Order
     Route::resource('order','api\OrderController');
-    Route::get('orderByUser/{userId}','api\OrderController@getOrders');
+    //ruta para los detalles de la orden
     Route::get('orderProducts/{order}','api\OrderController@orderProduct');
+
     Route::get('odersAsigned','api\OrderController@odersAsigned');
+    
+    //rutas nuevas
+    Route::get('odersCancelEntregadas/{userId}','api\OrderController@ordersFinished');
+    Route::get('odersActive/{userId}','api\OrderController@ordersActive');
 
     //Country
     Route::resource('country','api\CountryController');
