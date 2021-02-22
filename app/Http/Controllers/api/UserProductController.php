@@ -29,6 +29,18 @@ class UserProductController extends ApiResponseController
         return $this->successResponse([$productsCar, 'Products retrieved successfully.']);
     }
 
+    public function emptyCart(Request $request){
+
+        $compras = UserProduct::where('user_products.user_id',[$request['userId']])->first();
+        if ($compras){
+            return false;
+        }
+        else{
+            return true;
+        }
+
+    }
+
     //parametros: idUser
     //agregar producto al carrito
 
@@ -160,5 +172,6 @@ $product->state = 'archived';
         $userproduct->delete();
 
 
-  }
+
+ }
 }

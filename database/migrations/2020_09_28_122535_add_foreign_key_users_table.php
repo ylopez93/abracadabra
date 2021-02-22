@@ -20,7 +20,6 @@ class AddForeignKeyUsersTable extends Migration
                  ->onDelete('cascade')
                  ->onUpdate('cascade');
 
-            
         });
     }
 
@@ -33,7 +32,6 @@ class AddForeignKeyUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign('users_rol_id_foreign');
-            $table->dropForeign('users_municipie_id_foreign');
         });
     }
 }

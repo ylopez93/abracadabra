@@ -13,16 +13,18 @@ class SendMail extends Mailable
 
     public $title;
     public $customer_details;
+    public $order_details;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($title, $customer_details)
+    public function __construct($title, $customer_details,$order_details)
     {
         $this->title = $title;
-		$this->customer_details= $customer_details;
+        $this->customer_details= $customer_details;
+        $this->order_details = $order_details;
     }
 
     /**

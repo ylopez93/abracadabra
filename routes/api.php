@@ -34,6 +34,8 @@ Route::group(['middleware' => 'api','CORS'
     Route::get('category_modulo/{module}','api\ProductCategoryController@getCategoryModule');
     Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
     Route::post('sendEmail', 'api\MailController@sendEmail');
+    Route::post('sendEmailMessenger', 'api\MailController@sendEmailMessenger');
+
 });
 
 Route::group(['middleware' => 'auth:api','CORS',
@@ -46,6 +48,7 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
     Route::post('resetPassword', 'api\PasswordResetRequestController@sendEmail');
+    Route::resource('users','api\JWTAuthController');
 
     //Products
     Route::resource('product','api\ProductController');
@@ -60,6 +63,8 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::get('/cart/clear/{userId}','api\UserProductController@clearCart');
     Route::post('/cart/delete/','api\OrderController@deleteProductCart');
     Route::post('/cart/delete/','api\UserProductController@deleteProductCart');
+    Route::post('emptyCart','api\UserProductController@emptyCart');
+
 
     //Category
     Route::resource('category','api\ProductCategoryController');
@@ -68,6 +73,9 @@ Route::group(['middleware' => 'auth:api','CORS',
     //Messenger
     Route::resource('messenger','api\MessengerController');
     Route::post('messenger/update/{messenger}','api\MessengerController@update');
+    Route::post('messenger/odersAsignedMessenger','api\MessengerController@odersAsigned');
+    Route::post('messenger/odersCancelEntregadas','api\MessengerController@ordersFinished');
+    Route::post('messenger/odersActive','api\MessengerController@ordersActive');
 
     //Contact
     Route::resource('contact','api\ContactController');
@@ -76,12 +84,18 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('order','api\OrderController');
     //ruta para los detalles de la orden
     Route::get('orderProducts/{order}','api\OrderController@orderProduct');
-
-    Route::get('odersAsigned','api\OrderController@odersAsigned');
-    
-    //rutas nuevas
     Route::get('odersCancelEntregadas/{userId}','api\OrderController@ordersFinished');
     Route::get('odersActive/{userId}','api\OrderController@ordersActive');
+
+    //OrderExpress
+    Route::resource('orderExpress','api\OrderExpressController');
+    //ruta para los detalles de la orden
+    Route::get('orderDetails/{order}','api\OrderExpressController@orderDetails');
+
+     //OrderMototaxi
+     Route::resource('orderMototaxi','api\OrderMototaxiController');
+     //ruta para los detalles de la orden
+     Route::get('orderDetails/{order}','api\OrderMototaxiController@orderDetails');
 
     //Country
     Route::resource('country','api\CountryController');
@@ -93,5 +107,18 @@ Route::group(['middleware' => 'auth:api','CORS',
 
     //Province
     Route::resource('province','api\ProvinceController');
+
+    //Locality
+    Route::resource('locality','api\LocalityController');
+    Route::get('localities/{municipie_id}','api\LocalityController@localitiesMunicipie');
+
+    //DeliveryCosts
+    Route::resource('delivery','api\DeliveryCostController');
+    Route::post('deliveryCost','api\DeliveryCostController@transportationCost');
+
+    //Rols
+    Route::get('admin/odersCancelEntregadas','api\RolController@ordersFinished');
+    Route::get('admin/odersActive','api\RolController@ordersActive');
+
 
 });

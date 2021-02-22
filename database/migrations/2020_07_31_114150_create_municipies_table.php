@@ -16,6 +16,7 @@ class CreateMunicipiesTable extends Migration
         Schema::create('municipies', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
+            $table->double('price', 8, 2);
             $table->timestamps();
             $table->softDeletes();
         });

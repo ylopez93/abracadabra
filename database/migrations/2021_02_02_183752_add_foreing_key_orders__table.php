@@ -26,9 +26,15 @@ class AddForeignKeyOrdersTable extends Migration
                  ->onDelete('cascade')
                  ->onUpdate('cascade');
 
-            $table->bigInteger('municipie_id')->unsigned();
-            $table->foreign('municipie_id')
-                ->references('id')->on('municipies')
+            $table->bigInteger('locality_id')->unsigned();
+            $table->foreign('locality_id')
+                ->references('id')->on('localities')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->bigInteger('delivery_cost_id')->unsigned();
+            $table->foreign('delivery_cost_id')
+                ->references('id')->on('deliveries_costs')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
@@ -44,7 +50,8 @@ class AddForeignKeyOrdersTable extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign('orders_messenger_id_foreign');
             $table->dropForeign('orders_user_id_foreign');
-            $table->dropForeign('orders_municipie_id_foreign');
+            $table->dropForeign('orders_locality_id_foreign');
+            $table->dropForeign('orders_delivery_cost_id_foreign');
         });
     }
 }

@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Rol;
+use App\Messenger;
 use App\Municipie;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -78,9 +79,12 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Rol::class);
     }
 
-    
-
     public function userProduct(){
         return $this->hasMany(UserProduct::class);
+    }
+
+    public function messenger()
+    {
+        return $this->hasOne(Messenger::class);
     }
 }

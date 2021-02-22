@@ -145,7 +145,6 @@ class ProductController extends ApiResponseController
             $productimage->product_image_id = $request['id'];
             $productimage = DB::update('update product_images set name = ?, product_image_id = ? where product_image_id = ?', [$filename,$request['id'],$product->id]);
 
-
         }
 
         return $this->successResponse([$product, 'Product updated successfully.']);

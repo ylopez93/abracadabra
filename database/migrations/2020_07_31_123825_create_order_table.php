@@ -13,7 +13,7 @@ class CreateOrderTable extends Migration
      */
     public function up()
     {
-        Schema::create('order', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('code',100)->nullable();
             $table->string('user_name');
@@ -24,12 +24,12 @@ class CreateOrderTable extends Migration
             $table->time('pickup_time_to')->nullable();
             $table->time('delivery_time_to')->nullable();
             $table->time('delivery_time_from')->nullable();
-            $table->string('message')->nullable();;
+            $table->string('message')->nullable();
             $table->enum('state', ['nueva', 'en_progreso','asignada','entregada', 'cancelada'])->default('nueva');
             $table->enum('payment_type', ['card', 'cash', 'paypal'])->default('cash');
             $table->enum('payment_state', ['done', 'undone', 'confirmed'])->default('undone');
             $table->enum('delivery_type', ['express','standard'])->default('standard');
-            $table->double('transportation_cost', 8, 2)->nullable();
+            $table->string('message_cancel')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -42,6 +42,6 @@ class CreateOrderTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order');
+        Schema::dropIfExists('orders');
     }
 }

@@ -3,6 +3,10 @@
 namespace App;
 
 use App\User;
+use App\Locality;
+use App\Messenger;
+use App\OrderProduct;
+use App\DeliveriesCost;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -29,8 +33,9 @@ class Order extends Model
         'delivery_type',
         'messenger_id',
         'user_id',
-        'municipie_id',
-        'transportation_cost'
+        'locality_id',
+        'delivery_cost_id',
+        'message_cancel'
 
     ];
 
@@ -51,9 +56,14 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function municipio()
+    public function locality()
     {
-        return $this->belongsTo(Municipie::class);
+        return $this->belongsTo(Locality::class);
+    }
+
+    public function delivery()
+    {
+        return $this->belongsTo(DeliveriesCost::class);
     }
 
 

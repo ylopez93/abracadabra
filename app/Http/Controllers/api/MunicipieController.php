@@ -50,6 +50,7 @@ class MunicipieController extends ApiResponseController
         if($validator){
            $municipie = new Municipie();
            $municipie->name = $request['name'];
+           $municipie->price = $request['price'];
            $municipie->province_id = $request['province_id'];
            $municipie->save();
 
@@ -103,6 +104,7 @@ class MunicipieController extends ApiResponseController
         $validator = $request->validate($v_municipie->rules());
         if($validator){
         $municipie->name = $request['name'];
+        $municipie->price = $request['price'];
         $municipie->province_id = $request['province_id'];
         $municipie->save();
         return $this->successResponse([$municipie, 'Municipie updated successfully.']);

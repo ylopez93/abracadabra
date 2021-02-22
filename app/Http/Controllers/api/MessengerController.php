@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Order;
 use App\Messenger;
+use App\OrderProduct;
+use App\OrdersExpress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Requests\StoreMessengerPost;
+use App\Http\Controllers\api\ApiResponseController;
 
 class MessengerController extends ApiResponseController
 {
@@ -19,6 +23,136 @@ class MessengerController extends ApiResponseController
     {
         $messengers = Messenger::all();
         return $this->successResponse([$messengers,'Messengers retrieved successfully.']);
+    }
+
+    public function odersAsigned(Request $request)
+    {
+        $messenger = DB::select('select messengers.id from messengers where messengers.user_id = ?', [$request['userId']]);
+        if(empty($messenger)){
+
+            return $this->successResponse(['El mensajero que busca no existe.']);
+        }
+        $messengerId = $messenger[0]->id;
+
+        $orders = Order::
+        join('messengers', 'messengers.id', '=', 'orders.messenger_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','users.name as user','users.id',
+        'users.email','rols.name as rol')
+        ->orderBy('orders.created_at', 'desc')
+        ->where('orders.messenger_id',[$messengerId])
+        ->where('orders.state','asignada')
+        ->whereNull('orders.deleted_at')
+        ->whereNull('messengers.deleted_at')
+        ->get();
+
+        $ordersExpress = OrdersExpress::
+        join('messengers', 'messengers.id', '=', 'orders_expresses.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_expresses.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_expresses.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_expresses.locality_id_r')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_expresses.locality_id_d')
+        ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
+        'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
+        'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        ->orderBy('orders_expresses.created_at', 'desc')
+        ->where('orders_expresses.state', 'asignada')
+        ->where('orders_expresses.messenger_id',[$messengerId])
+        ->whereNull('orders_expresses.deleted_at')
+        ->whereNull('messengers.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress, 'Orders retrieved successfully.']);
+    }
+
+    public function ordersFinished(Request $request){
+
+        $messenger = DB::select('select messengers.id from messengers where messengers.user_id = ?', [$request['userId']]);
+        $messengerId = $messenger[0]->id;
+
+        $orders = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','orders.message_cancel','users.name as user','users.id',
+        'users.email','rols.name as rol')
+        ->where([
+            ['orders.messenger_id', '=', [$messengerId]],
+            ['orders.state','=','cancelada'],
+        ])->orWhere([
+            ['orders.messenger_id', '=', [$messengerId]],
+            ['orders.state','=','entregada']
+        ])
+        ->whereNull('orders.deleted_at')
+        ->get();
+
+        $ordersExpress = OrdersExpress::
+        join('users', 'users.id', '=', 'orders_expresses.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_expresses.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_expresses.locality_id_r')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_expresses.locality_id_d')
+        ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
+        'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
+        'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        ->where([
+            ['orders_expresses.messenger_id', '=', [$messengerId]],
+            ['orders_expresses.state','=','cancelada'],
+        ])->orWhere([
+            ['orders_expresses.messenger_id', '=', [$messengerId]],
+            ['orders_expresses.state','=','entregada']
+        ])
+        ->whereNull('orders_expresses.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders retrieved successfully.']);
+    }
+
+    public function ordersActive(Request $request){
+
+        $messenger = DB::select('select messengers.id from messengers where messengers.user_id = ?', [$request['userId']]);
+        $messengerId = $messenger[0]->id;
+
+        $orders = Order::
+        join('users', 'users.id', '=', 'orders.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
+        ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
+        'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
+        'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','users.name as user','users.id',
+        'users.email','rols.name as rol')
+        ->where('orders.messenger_id',[$messengerId])
+        ->Where('orders.state','=','en_progreso')
+        ->whereNull('orders.deleted_at')
+        ->get();
+
+        $ordersExpress = OrdersExpress::
+        join('users', 'users.id', '=', 'orders_expresses.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_expresses.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_expresses.locality_id_r')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_expresses.locality_id_d')
+        ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
+        'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
+        'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        ->where('orders_expresses.messenger_id',[$messengerId])
+        ->where('orders_expresses.state','=','nueva')
+        ->orWhere('orders_expresses.state','=','en_progreso')
+        ->orWhere('orders_expresses.state','=','asignada')
+        ->whereNull('orders_expresses.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders retrieved successfully.']);
     }
 
     /**
@@ -50,6 +184,7 @@ class MessengerController extends ApiResponseController
            $messenger->email = $request['email'];
            $messenger->address = $request['address'];
            $messenger->vehicle_registration = $request['vehicle_registration'];
+           $messenger->user_id = $request['user_id'];
 
            $filename = time() .".". $request->image->extension();
            $request->image->move(public_path('images'),$filename);
@@ -103,7 +238,8 @@ class MessengerController extends ApiResponseController
     {
         $v_messenger = new StoreMessengerPost();
         $validator = $request->validate($v_messenger->rules());
-        if($validator){
+
+       if($validator){
         $messenger->name = $request['name'];
         $messenger->surname = $request['surname'];
         $messenger->ci = $request['ci'];
@@ -111,6 +247,8 @@ class MessengerController extends ApiResponseController
         $messenger->email = $request['email'];
         $messenger->address = $request['address'];
         $messenger->vehicle_registration = $request['vehicle_registration'];
+        $messenger->user_id = $request['user_id'];
+
         if ($request->hasFile('image')) {
 
             $filename = time() .".". $request->image->extension();
@@ -138,5 +276,6 @@ class MessengerController extends ApiResponseController
     {
         $messenger->delete();
         return $this->successResponse('Messenger deleted successfully.');
-    }
+
+   }
 }
