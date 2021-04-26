@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\User;
 use App\Order;
 use App\Messenger;
 use App\OrderProduct;
@@ -42,7 +43,7 @@ class MessengerController extends ApiResponseController
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
         'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','users.name as user','users.id',
-        'users.email','rols.name as rol')
+        'users.email','rols.name as rol','messengers.id as messenger_id')
         ->orderBy('orders.created_at', 'desc')
         ->where('orders.messenger_id',[$messengerId])
         ->where('orders.state','asignada')
@@ -60,7 +61,7 @@ class MessengerController extends ApiResponseController
         ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
         'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
         'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
-        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
         ->orderBy('orders_expresses.created_at', 'desc')
         ->where('orders_expresses.state', 'asignada')
         ->where('orders_expresses.messenger_id',[$messengerId])
@@ -77,25 +78,30 @@ class MessengerController extends ApiResponseController
         $messengerId = $messenger[0]->id;
 
         $orders = Order::
-        join('users', 'users.id', '=', 'orders.user_id')
+        join('messengers', 'messengers.id', '=', 'orders.messenger_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
-        'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','orders.message_cancel','users.name as user','users.id',
-        'users.email','rols.name as rol')
+        'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','orders.message_cancel','users.name as user',
+        'users.id','users.email','rols.name as rol','messengers.id as messenger_id')
         ->where([
             ['orders.messenger_id', '=', [$messengerId]],
             ['orders.state','=','cancelada'],
         ])->orWhere([
             ['orders.messenger_id', '=', [$messengerId]],
             ['orders.state','=','entregada']
+        ])->orWhere([
+            ['orders.messenger_id', '=', [$messengerId]],
+            ['orders.state','=','en_progreso']
         ])
         ->whereNull('orders.deleted_at')
         ->get();
 
         $ordersExpress = OrdersExpress::
-        join('users', 'users.id', '=', 'orders_expresses.user_id')
+        join('messengers', 'messengers.id', '=', 'orders_expresses.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_expresses.user_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_expresses.delivery_cost_id')
         ->join('localities as localityR', 'localityR.id', '=', 'orders_expresses.locality_id_r')
@@ -103,13 +109,16 @@ class MessengerController extends ApiResponseController
         ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
         'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
         'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
-        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
         ->where([
             ['orders_expresses.messenger_id', '=', [$messengerId]],
             ['orders_expresses.state','=','cancelada'],
         ])->orWhere([
             ['orders_expresses.messenger_id', '=', [$messengerId]],
             ['orders_expresses.state','=','entregada']
+        ])->orWhere([
+            ['orders_expresses.messenger_id', '=', [$messengerId]],
+            ['orders_expresses.state','=','en_progreso']
         ])
         ->whereNull('orders_expresses.deleted_at')
         ->get();
@@ -123,20 +132,22 @@ class MessengerController extends ApiResponseController
         $messengerId = $messenger[0]->id;
 
         $orders = Order::
-        join('users', 'users.id', '=', 'orders.user_id')
+        join('messengers', 'messengers.id', '=', 'orders.messenger_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
         'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','users.name as user','users.id',
-        'users.email','rols.name as rol')
+        'users.email','rols.name as rol','messengers.id as messenger_id')
         ->where('orders.messenger_id',[$messengerId])
         ->Where('orders.state','=','en_progreso')
         ->whereNull('orders.deleted_at')
         ->get();
 
         $ordersExpress = OrdersExpress::
-        join('users', 'users.id', '=', 'orders_expresses.user_id')
+        join('messengers', 'messengers.id', '=', 'orders_expresses.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_expresses.user_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_expresses.delivery_cost_id')
         ->join('localities as localityR', 'localityR.id', '=', 'orders_expresses.locality_id_r')
@@ -144,7 +155,7 @@ class MessengerController extends ApiResponseController
         ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
         'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
         'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
-        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
         ->where('orders_expresses.messenger_id',[$messengerId])
         ->where('orders_expresses.state','=','nueva')
         ->orWhere('orders_expresses.state','=','en_progreso')
@@ -173,6 +184,8 @@ class MessengerController extends ApiResponseController
      */
     public function store(Request $request)
     {
+        $user = DB::select('select users.id from users where users.email = ?', [$request['email']]);
+        $user_id = $user[0]->id;
         $v_messenger = new StoreMessengerPost();
         $validator = $request->validate($v_messenger->rules());
         if($validator){
@@ -184,12 +197,17 @@ class MessengerController extends ApiResponseController
            $messenger->email = $request['email'];
            $messenger->address = $request['address'];
            $messenger->vehicle_registration = $request['vehicle_registration'];
-           $messenger->user_id = $request['user_id'];
+           $messenger->user_id = $user_id;
 
            $filename = time() .".". $request->image->extension();
            $request->image->move(public_path('images'),$filename);
            $messenger->image = $filename;
            $messenger->save();
+
+           //modificar el rol en la tabla user
+           $userUpdate = User::findOrFail($messenger->user_id);
+           $userUpdate->rol_id = '3';
+           $userUpdate->save();
 
         return $this->successResponse([$messenger, 'Messenger created successfully.']);
 

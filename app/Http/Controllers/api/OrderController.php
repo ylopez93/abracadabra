@@ -26,6 +26,8 @@ use App\Http\Controllers\api\MailController;
 use App\Http\Requests\StoreDeliveryCostPost;
 use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Controllers\api\UserProductController;
+use App\Mail\SendMailMessengerMototaxi;
+use App\Mail\SendMailMessengerReasigned;
 use App\OrdersMototaxi;
 
 class OrderController extends ApiResponseController
@@ -62,7 +64,7 @@ class OrderController extends ApiResponseController
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
         'orders.payment_type','orders.payment_state','deliveries_costs.tranpostation_cost','orders.message_cancel','users.name as user','users.id',
-        'users.email','rols.name as rol')
+        'users.email','rols.name as rol','orders.message_cancel')
         ->where([
             ['orders.user_id', '=', [$userId]],
             ['orders.state','=','cancelada'],
@@ -82,7 +84,8 @@ class OrderController extends ApiResponseController
         ->select('orders_expresses.id as order','orders_expresses.code','orders_expresses.name_r','orders_expresses.address_r','orders_expresses.cell_r',
         'orders_expresses.phone_r','localityR.name as locality_remitente','orders_expresses.name_d','localityD.name as locality_destinatario','orders_expresses.address_d',
         'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
-        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol')
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol',
+        'orders_expresses.message_cancel')
         ->where([
             ['orders_expresses.user_id', '=', [$userId]],
             ['orders_expresses.state','=','cancelada'],
@@ -101,7 +104,8 @@ class OrderController extends ApiResponseController
         ->join('localities as localityT', 'localityT.id', '=', 'orders_mototaxis.locality_to_id')
         ->select('orders_mototaxis.id as order','orders_mototaxis.code','orders_mototaxis.cell','orders_mototaxis.address_from',
         'localityF.name as locality_from','localityT.name as locality_to','orders_mototaxis.address_to',
-        'orders_mototaxis.state','deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email')
+        'orders_mototaxis.state','deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email',
+        'orders_mototaxis.message_cancel')
         ->where([
             ['orders_mototaxis.user_id', '=', [$userId]],
             ['orders_mototaxis.state','=','cancelada'],
@@ -205,13 +209,16 @@ class OrderController extends ApiResponseController
         get();
 
         $order = Order::
-        join('users', 'users.id', '=', 'orders.user_id')
+        join('localities', 'localities.id', '=', 'orders.locality_id')
+        ->join('municipies', 'municipies.id', '=', 'localities.municipie_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders.delivery_cost_id')
         ->select('orders.id as order','orders.code','orders.user_name','orders.user_phone','orders.user_address',
         'orders.pickup_date','orders.pickup_time_from','orders.pickup_time_to','orders.message','orders.state',
         'orders.payment_type','orders.payment_state','orders.delivery_time_to','orders.delivery_time_from',
-        'deliveries_costs.tranpostation_cost','users.name as user','users.id','users.email','rols.name as rol')
+        'deliveries_costs.tranpostation_cost','users.name as user','users.id','users.email','rols.name as rol',
+        'localities.name as locality','municipies.name as municipie')
         ->where('orders.id',[$id])
         ->whereNull('orders.deleted_at')
         ->get();
@@ -313,9 +320,7 @@ class OrderController extends ApiResponseController
 
                     return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order new is created successfully.']);
                 }
-
             }
-
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
@@ -408,9 +413,16 @@ class OrderController extends ApiResponseController
      */
     public function update(Request $request, Order $order)
     {
+        $mesengerOld = null;
         $v_order = new StoreOrderPut();
         $validator = $request->validate($v_order->rules());
         if ($validator) {
+
+            //hacer una consulta a la bd para verificar si existe messenger_id y si lo hay,
+            // guardarlo para, enviar sms de cancelacion o reasignacion
+            if($order->messenger_id != null){
+                $mesengerOld = Messenger::findOrFail($order->messenger_id);
+            }
 
             $order->delivery_time_to = $request['delivery_time_to'];
             $order->delivery_time_from = $request['delivery_time_from'];
@@ -426,6 +438,14 @@ class OrderController extends ApiResponseController
             $productsOrder = DB::select('select products.`name`,order_products.quantity,order_products.total from order_products join products ON products.id = order_products.product_id where order_products.order_id = ?', [$order->id]);
 
             if($request->state == 'asignada'){
+                if($mesengerOld != $order->messenger_id){
+
+                    $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
+                if(empty($result)){
+
+                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order asigned successfully.']);
+                }
+                }
 
                 $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
                 if(empty($result)){
@@ -444,7 +464,7 @@ class OrderController extends ApiResponseController
             }
       }
 
-        $v_order = new StoreOrderStatePut();
+        $v_order = new  StoreOrderStatePut();
         $validator = $request->validate($v_order->rules());
         if ($validator){
 
@@ -511,9 +531,19 @@ class OrderController extends ApiResponseController
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
 
-          }else{
+          }if($orderasignada->state == 'cancelada'){
             $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailOrderCancel($title, $customer_details,$order_details));
+            if (empty($sendmail)) {
+              return response()->json(['message'
+              => 'Mail Sent Sucssfully'], 200);
+              }else{
+                  return response()->json(['message' => 'Mail Sent fail'], 400);
+                 }
+
+          }else{
+            $sendmail = Mail::to($customer_details['email'])
+            ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
               => 'Mail Sent Sucssfully'], 200);

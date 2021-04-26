@@ -241,8 +241,6 @@ class OrderExpressController extends ApiResponseController
             $orderExpress->weigth = $request['weigth'];
             $orderExpress->state = $request['state'];
             $orderExpress->message = $request['message'];
-            $orderExpress->delivery_cost_id = $request['delivery_cost_id'];
-            $orderExpress->user_id = $request['user_id'];
             $orderExpress->messenger_id = $request['messenger_id'];
             $orderExpress->message_cancel = $request['message_cancel'];
             $orderExpress->save();
@@ -358,9 +356,10 @@ class OrderExpressController extends ApiResponseController
      * @param  \App\OrdersExpress  $orderExpress
      * @return \Illuminate\Http\Response
      */
-    public function destroy(OrdersExpress $OrdersExpress)
+    public function destroyExpress(Request $request)
     {
-        $OrdersExpress->delete();
+        $orderExpress = OrdersExpress::findOrFail($request['id']);
+        $orderExpress->delete();
         return $this->successResponse('Order deleted successfully.');
     }
 }

@@ -14,6 +14,7 @@ class CreateUsersTable extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
+
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('email')->unique();
@@ -21,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->enum('active', ['active', 'desactive'])->default('desactive');
             $table->string('confirmation_code')->nullable();
-            $table->boolean('confirmed')->default(false);
+            $table->boolean('confirmed')->default(0);
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

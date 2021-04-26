@@ -5,13 +5,17 @@ namespace App\Http\Controllers\api;
 
 use App\User;
 use Throwable;
+use App\Mail\SendMail;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreUserPut;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreRegisterPost;
 use App\Http\Requests\RegisterAuthRequest;
-use App\Http\Requests\StoreUserPut;
+use App\Mail\SendMailVerify;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 
@@ -39,34 +43,72 @@ class JWTAuthController extends ApiResponseController
     {
         $v_user = new StoreRegisterPost();
         $validator = $request->validate($v_user->rules());
+        if ($validator) {
+
         $userinsert = DB::select('select users.id from users where email = ?', [$request['email']]);
+        $data['confirmation_code'] = Str::random(6);
+        $data['name'] = $request['name'];
+        $data['email'] = $request['email'];
+
         if($userinsert == null){
-            if ($validator) {
+
                 $user = new  User();
                 $user->name = $request['name'];
                 $user->email = $request['email'];
                 $user->password = bcrypt($request['password']);
                 $user->rol_id = 2;
+                $user->confirmation_code = $data['confirmation_code'];
                 $user->save();
 
-            if ($this->loginAfterSignUp) {
-                return  $this->login($request);
+                // Send confirmation code
+
+                $result = $this->sendEmailVerify($data);
+
+            } else {
+                return $this->successResponse(['El usuario ' .$request->email. ' ya esta insertado']);
             }
+        }else {
+            return $this->successResponse(['Error al validar']);
+        }
+    }
 
-            return  response()->json([
-                'message' => 'Usuario se registro correctamente.'
-            ]);
+    public function sendEmailVerify($data){
 
-        } return response()->json([
-            'message' => 'Error al validar'
-        ]);
+        $title = 'Se ha registrado en ABRACADABRA!!!! Gracias por elegirnos';
+        $customer_details = [
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'confirmation_code'=> $data['confirmation_code']
+        ];
+           $sendmail = Mail::to($customer_details['email'])
+           ->send(new SendMailVerify($title, $customer_details));
+              if (empty($sendmail)) {
 
-        }return response()->json([
-            'message' => 'El usuario ' .$request->email. ' ya esta insertado'
-        ]);
+             return $this->successResponse(['Mensaje Enviado Correctamente.']);
+              }else{
+                 return $this->successResponse(['Error al enviar el mensaje.']);
+
+                }
 
     }
 
+
+      public function verify($code)
+    {
+        $user = User::where('confirmation_code', $code)->first();
+        if (! $user){
+             //redireccionar al register o mostrar una notificacion de que tiene que activar su cuenta
+             return $this->successResponse(['el codigo de confirmacion es incorrecto ']);
+        }
+        $user->confirmed = true;
+        $user->confirmation_code = null;
+        $user->active = 'active';
+        $user->save();
+
+        //ver q devolver aqui para redireccionar a la vista del login
+        return $this->successResponse(['El usuario ' .$user->email. ' Ha confirmado correctamente su correo']);
+
+    }
 
     public function login(Request $request)
     {

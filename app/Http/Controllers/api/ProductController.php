@@ -58,7 +58,7 @@ class ProductController extends ApiResponseController
                $product->stock = $request['stock'];
                $product->price = $request['price'];
                $product->discount_percent = $request['discount_percent'];
-               $product->state = 'archived';
+               $product->state = $request['state'];
                $product->product_category_id = $request['product_category_id'];
                $product->save();
 

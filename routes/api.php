@@ -4,6 +4,7 @@ use App\User;
 use Tymon\JWTAuth\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MailController;
 
@@ -35,6 +36,7 @@ Route::group(['middleware' => 'api','CORS'
     Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
     Route::post('sendEmail', 'api\MailController@sendEmail');
     Route::post('sendEmailMessenger', 'api\MailController@sendEmailMessenger');
+    Route::get('register/verify/{code}', 'api\JWTAuthController@verify');
 
 });
 
@@ -43,18 +45,17 @@ Route::group(['middleware' => 'auth:api','CORS',
 
 ], function ($router) {
 
-    //Users
+    //Users ****
     Route::post('logout', 'api\JWTAuthController@logout');
     Route::post('refresh', 'api\JWTAuthController@refresh');
     Route::post('user', 'api\JWTAuthController@getAuthUser');
-    Route::post('resetPassword', 'api\PasswordResetRequestController@sendEmail');
     Route::resource('users','api\JWTAuthController');
 
-    //Products
+    //Products ****
     Route::resource('product','api\ProductController');
     Route::post('product/update/{product}','api\ProductController@update');
 
-    //UserPorduct_Cart
+    //UserPorduct_Cart ****
     Route::get('/cart/{userId}','api\UserProductController@getContent');
     Route::post('/cart/add','api\UserProductController@addItem');
     Route::get('/cart/count/{userId}','api\UserProductController@countCart');
@@ -66,46 +67,45 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('emptyCart','api\UserProductController@emptyCart');
 
 
-    //Category
+    //Category ****
     Route::resource('category','api\ProductCategoryController');
     Route::get('productOrderByCategory','api\ProductCategoryController@categoryProductAll');
 
-    //Messenger
+    //Messenger ****
     Route::resource('messenger','api\MessengerController');
     Route::post('messenger/update/{messenger}','api\MessengerController@update');
     Route::post('messenger/odersAsignedMessenger','api\MessengerController@odersAsigned');
     Route::post('messenger/odersCancelEntregadas','api\MessengerController@ordersFinished');
     Route::post('messenger/odersActive','api\MessengerController@ordersActive');
 
-    //Contact
+    //Contact ****
     Route::resource('contact','api\ContactController');
 
-    //Order
+    //Order ****
     Route::resource('order','api\OrderController');
-    //ruta para los detalles de la orden
     Route::get('orderProducts/{order}','api\OrderController@orderProduct');
     Route::get('odersCancelEntregadas/{userId}','api\OrderController@ordersFinished');
     Route::get('odersActive/{userId}','api\OrderController@ordersActive');
 
     //OrderExpress
     Route::resource('orderExpress','api\OrderExpressController');
-    //ruta para los detalles de la orden
     Route::get('orderDetails/{order}','api\OrderExpressController@orderDetails');
+    Route::post('deleteExpress','api\OrderExpressController@destroyExpress');
 
      //OrderMototaxi
      Route::resource('orderMototaxi','api\OrderMototaxiController');
-     //ruta para los detalles de la orden
-     Route::get('orderDetails/{order}','api\OrderMototaxiController@orderDetails');
+     Route::get('orderDetailsMoto/{order}','api\OrderMototaxiController@orderDetailsMoto');
+     Route::post('deleteMototaxi','api\OrderMototaxiController@destroyMototaxi');
 
-    //Country
+    //Country ****
     Route::resource('country','api\CountryController');
     Route::get('country/{country}/province','api\CountryController@countryPorvinces');
 
-    //Municipie
+    //Municipie ****
     Route::resource('municipie','api\MunicipieController');
     Route::get('municipie/{municipie}/user','api\MunicipieController@municipieUsers');
 
-    //Province
+    //Province ****
     Route::resource('province','api\ProvinceController');
 
     //Locality

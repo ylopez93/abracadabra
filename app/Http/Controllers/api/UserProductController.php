@@ -33,10 +33,10 @@ class UserProductController extends ApiResponseController
 
         $compras = UserProduct::where('user_products.user_id',[$request['userId']])->first();
         if ($compras){
-            return false;
+            return $this->successResponse(false);
         }
         else{
-            return true;
+            return $this->successResponse(true);
         }
 
     }

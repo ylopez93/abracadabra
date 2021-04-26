@@ -45,11 +45,11 @@ class OrderMototaxiController extends ApiResponseController
 
     }
 
-    public function orderDetails(OrdersMototaxi $order)
+    public function orderDetailsMoto(OrdersMototaxi $order)
     {
         $id= $order->id;
 
-        $order = OrderMototaxi::
+        $order = OrdersMototaxi::
         join('users','users.id', '=','orders_mototaxis.user_id')
         ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_mototaxis.delivery_cost_id')
         ->join('rols', 'users.rol_id', '=', 'rols.id')
@@ -337,8 +337,9 @@ class OrderMototaxiController extends ApiResponseController
      * @param  \App\OrdersMototaxi  $orderMototaxi
      * @return \Illuminate\Http\Response
      */
-    public function destroy(OrdersMototaxi $orderMototaxi)
+    public function destroyMototaxi(Request $request)
     {
+        $orderMototaxi = OrdersMototaxi::findOrFail($request['id']);
         $orderMototaxi->delete();
         return $this->successResponse('Order deleted successfully.');
     }
