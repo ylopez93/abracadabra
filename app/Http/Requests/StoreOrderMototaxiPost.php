@@ -27,11 +27,11 @@ class StoreOrderMototaxiPost extends FormRequest
 
             'locality_from'=> 'required',
             'cell_from'=> 'required|max:255',
-            'address_from'=> 'required|max:255',
+            'adress_from'=> 'required|max:255',
             'from_municipality_id'=> 'required',
             'to_municipality_id'=> 'required',
             'locality_to' => 'required',
-            'address_to' => 'required|max:255',
+            'adress_to' => 'required|max:255',
             'state' => 'required',
             'delivery_cost_id'=> 'required',
 

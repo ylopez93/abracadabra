@@ -21,26 +21,45 @@ class DeliveryCostController extends ApiResponseController
         //
     }
 
+    public static function locationByModule($module){
+
+            $longitude_fromBD = DB::select('select contacts.longitude from contacts  where contacts.module = ?', [$module]);
+            $longitude_from = $longitude_fromBD[0]->longitude;
+            $latitude_fromBD = DB::select('select contacts.latitude from contacts  where contacts.module = ?', [$module]);
+            $latitude_from = $latitude_fromBD[0]->latitude;
+            return response()->json([
+                'longitude_from'=>$longitude_from,
+                'latitude_from'=>$latitude_from
+            ]);
+
+
+    }
+
+
     public static function transportationCost(Request $request){
 
         $priceTotal = 0;
+        $price_Km = 0;
+        $FirstKm = DB::select('select contacts.price_first_km from contacts');
+        $price_FirstKm = $FirstKm[0]->price_first_km;
+        $Km = DB::select('select contacts.price_km from contacts');
+        $price_Km = $Km[0]->price_km;
 
-       if($request['to_municipality_id'] == 0){
-            return 0;
-        }
-         elseif($request['from_municipality_id'] > 0 & $request['to_municipality_id'] > 0){
+        $distance_Km = $request['distance'] / 1000;
 
-            $priceFrom = DB::select('select municipies.price from municipies where municipies.id = ?', [$request['from_municipality_id']]);
-            $priceTo = DB::select('select municipies.price from municipies where municipies.id = ?', [$request['to_municipality_id']]);
-            $priceTotal = $priceFrom[0]->price + $priceTo[0]->price;
+            if($distance_Km < 1){
 
-        }
-        else{
-             $priceTo = DB::select('select municipies.price from municipies where municipies.id = ?', [$request['to_municipality_id']]);
-            $priceTotal = $priceTo[0]->price;
-        }
+                $priceTotal = $distance_Km * $price_Km;
+            }
+            if($distance_Km >= 1){
 
-        return $priceTotal;
+                $Km = ($distance_Km - 1) * $price_Km;
+                $priceTotal = round($price_FirstKm + $Km);
+
+            }
+             return response()->json([
+                'costoTransportacion'=>$priceTotal
+            ]);
     }
 
     /**
@@ -101,7 +120,13 @@ class DeliveryCostController extends ApiResponseController
            $delivery = new DeliveriesCost();
            $delivery->from_municipality_id = $request['from_municipality_id'];
            $delivery->to_municipality_id = $request['to_municipality_id'];
-           $transportationCost = $this->transportationCost($request['from_municipality_id'],$request['to_municipality_id']);
+           $delivery->latitude_from = $request['latitude_from'];
+           $delivery->longitude_from = $request['longitude_from'];
+           $delivery->latitude_to = $request['latitude_to'];
+           $delivery->longitude_to = $request['longitude_to'];
+           $delivery->distance = $request['distance'];
+           $delivery->duration = $request['duration'];
+           $transportationCost = $this->transportationCost($request);
            $delivery->tranpostation_cost = $transportationCost;
            $delivery->save();
 
@@ -123,6 +148,6 @@ class DeliveryCostController extends ApiResponseController
     public function destroy(DeliveriesCost $deliveryCost)
     {
         $deliveryCost->delete();
-        return $this->successResponse('Municipie deleted successfully.');
+        return $this->successResponse('DeliveryCost deleted successfully.');
     }
 }

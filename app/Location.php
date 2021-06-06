@@ -2,16 +2,23 @@
 
 namespace App;
 
+use App\Order;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Contact extends Model
+class Location extends Model
 {
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['location,email,phone,movil_phone,description,latitude,longitude,price_first_km,price_km'];
-
     protected $hidden = ['created_at','updated_at'];
+
+    protected $fillable = ['latitude','longitude','order_code'];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
 
 }

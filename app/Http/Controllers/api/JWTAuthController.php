@@ -207,6 +207,18 @@ class JWTAuthController extends ApiResponseController
         ]);
     }
 
+    //Verificacion de TOKEN!!!!
+     //obtener token request tipo GET
+        // $headers = getallheaders();
+        // $tokenArray = $headers['Authorization'];
+        // $tokenX = explode(' ',$tokenArray);
+        // $token = $tokenX[1];
+        //buscar manera de decodificar este token obtenido y verificar rol e id user
+
+        //obtener token request tipo POST
+        //$token = $request->bearerToken();
+        
+
     // devuelve todos los users insertados en el sistema
 
     public function index()
@@ -225,6 +237,7 @@ class JWTAuthController extends ApiResponseController
         $user->name = $request['name'];
         $user->email = $request['email'];
         $user->rol_id = $request['rol_id'];
+        $user->active = $request['active'];
         $user->save();
 
         return $this->successResponse([$user, 'User updated successfully.']);

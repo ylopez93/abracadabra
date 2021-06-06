@@ -33,7 +33,7 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('register', 'api\JWTAuthController@register');
     Route::post('login', 'api\JWTAuthController@login');
     Route::get('category_modulo/{module}','api\ProductCategoryController@getCategoryModule');
-    Route::get('category/products/{category}','api\ProductCategoryController@byCategoryProductAll');
+    Route::get('category/products/{id}','api\ProductCategoryController@byCategoryProductAll');
     Route::post('sendEmail', 'api\MailController@sendEmail');
     Route::post('sendEmailMessenger', 'api\MailController@sendEmailMessenger');
     Route::get('register/verify/{code}', 'api\JWTAuthController@verify');
@@ -115,10 +115,16 @@ Route::group(['middleware' => 'auth:api','CORS',
     //DeliveryCosts
     Route::resource('delivery','api\DeliveryCostController');
     Route::post('deliveryCost','api\DeliveryCostController@transportationCost');
+    Route::get('deliveryLocation/{module}','api\DeliveryCostController@locationByModule');
 
     //Rols
     Route::get('admin/odersCancelEntregadas','api\RolController@ordersFinished');
     Route::get('admin/odersActive','api\RolController@ordersActive');
+    Route::get('usersRol/{rol}', 'api\RolController@findUsersByRol');
+
+    //Locations
+    Route::resource('location','api\LocationController');
+    Route::post('location/locationByOrder','api\LocationController@locationsOrder');
 
 
 });

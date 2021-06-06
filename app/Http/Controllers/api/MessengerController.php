@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMessengerPost;
 use App\Http\Controllers\api\ApiResponseController;
+use App\OrdersMototaxi;
 
 class MessengerController extends ApiResponseController
 {
@@ -69,7 +70,24 @@ class MessengerController extends ApiResponseController
         ->whereNull('messengers.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress, 'Orders retrieved successfully.']);
+        $ordersMototaxi = OrdersMototaxi::
+        join('messengers', 'messengers.id', '=', 'orders_mototaxis.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_mototaxis.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_mototaxis.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_mototaxis.locality_from_id')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_mototaxis.locality_to_id')
+        ->select('orders_mototaxis.id as order','orders_mototaxis.code','orders_mototaxis.cell','orders_mototaxis.address_from',
+        'localityR.name as locality_from','localityD.name as locality_to','orders_mototaxis.address_to',
+        'orders_mototaxis.state','deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
+        ->orderBy('orders_mototaxis.created_at', 'desc')
+        ->where('orders_mototaxis.state', 'asignada')
+        ->where('orders_mototaxis.messenger_id',[$messengerId])
+        ->whereNull('orders_mototaxis.deleted_at')
+        ->whereNull('messengers.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'Orders retrieved successfully.']);
     }
 
     public function ordersFinished(Request $request){
@@ -92,9 +110,6 @@ class MessengerController extends ApiResponseController
         ])->orWhere([
             ['orders.messenger_id', '=', [$messengerId]],
             ['orders.state','=','entregada']
-        ])->orWhere([
-            ['orders.messenger_id', '=', [$messengerId]],
-            ['orders.state','=','en_progreso']
         ])
         ->whereNull('orders.deleted_at')
         ->get();
@@ -116,14 +131,31 @@ class MessengerController extends ApiResponseController
         ])->orWhere([
             ['orders_expresses.messenger_id', '=', [$messengerId]],
             ['orders_expresses.state','=','entregada']
-        ])->orWhere([
-            ['orders_expresses.messenger_id', '=', [$messengerId]],
-            ['orders_expresses.state','=','en_progreso']
         ])
         ->whereNull('orders_expresses.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders retrieved successfully.']);
+        $ordersMototaxi = OrdersMototaxi::
+        join('messengers', 'messengers.id', '=', 'orders_mototaxis.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_mototaxis.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_mototaxis.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_mototaxis.locality_from_id')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_mototaxis.locality_to_id')
+        ->select('orders_mototaxis.id as order','orders_mototaxis.code','orders_mototaxis.cell','orders_mototaxis.address_from',
+        'localityR.name as locality_from','localityD.name as locality_to','orders_mototaxis.address_to',
+        'orders_mototaxis.state','deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
+        ->where([
+            ['orders_mototaxis.messenger_id', '=', [$messengerId]],
+            ['orders_mototaxis.state','=','cancelada'],
+        ])->orWhere([
+            ['orders_mototaxis.messenger_id', '=', [$messengerId]],
+            ['orders_mototaxis.state','=','entregada']
+        ])
+        ->whereNull('orders_mototaxis.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
     }
 
     public function ordersActive(Request $request){
@@ -157,13 +189,26 @@ class MessengerController extends ApiResponseController
         'orders_expresses.cell_d','orders_expresses.phone_d','orders_expresses.object_details','orders_expresses.weigth','orders_expresses.state','orders_expresses.message',
         'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
         ->where('orders_expresses.messenger_id',[$messengerId])
-        ->where('orders_expresses.state','=','nueva')
-        ->orWhere('orders_expresses.state','=','en_progreso')
-        ->orWhere('orders_expresses.state','=','asignada')
+        ->where('orders_expresses.state','=','en_progreso')
         ->whereNull('orders_expresses.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders retrieved successfully.']);
+        $ordersMototaxi = OrdersMototaxi::
+        join('messengers', 'messengers.id', '=', 'orders_mototaxis.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_mototaxis.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_mototaxis.delivery_cost_id')
+        ->join('localities as localityR', 'localityR.id', '=', 'orders_mototaxis.locality_from_id')
+        ->join('localities as localityD', 'localityD.id', '=', 'orders_mototaxis.locality_to_id')
+        ->select('orders_mototaxis.id as order','orders_mototaxis.code','orders_mototaxis.cell','orders_mototaxis.address_from',
+        'localityR.name as locality_from','localityD.name as locality_to','orders_mototaxis.address_to',
+        'orders_mototaxis.state','deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','rols.name as rol','messengers.id as messenger_id')
+        ->where('orders_mototaxis.messenger_id',[$messengerId])
+        ->where('orders_mototaxis.state','=','en_progreso')
+        ->whereNull('orders_mototaxis.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
     }
 
     /**

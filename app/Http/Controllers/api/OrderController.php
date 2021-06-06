@@ -253,6 +253,14 @@ class OrderController extends ApiResponseController
      */
       public function store(Request $request){
 
+        $string = $request['lonlat'];
+        $arrayLocationsTo = explode(';',$string);
+        $module =  'ABRAME';
+        $LocationsFrom = DeliveryCostController::locationByModule($module);
+        $LongitudeFrom = json_decode($LocationsFrom->original['longitude_from']);
+        $LatitudeFrom = json_decode($LocationsFrom->original['latitude_from']);
+
+
         $v_order = new StoreOrderPost();
         $validator = $request->validate($v_order->rules());
         $cadena = Str::random(5);
@@ -282,11 +290,16 @@ class OrderController extends ApiResponseController
                $delivery = new DeliveriesCost();
                $delivery->from_municipality_id = $request['from_municipality_id'];
                $delivery->to_municipality_id = $request['to_municipality_id'];
+               $delivery->latitude_from = $LatitudeFrom;
+               $delivery->longitude_from = $LongitudeFrom;
+               $delivery->latitude_to = $arrayLocationsTo[1];
+               $delivery->longitude_to = $arrayLocationsTo[0];
+               $delivery->distance = $request['distance'];
 
                $transportationCost = DeliveryCostController::transportationCost($request);
-               $delivery->tranpostation_cost = $transportationCost;
+               $costoTransportacion = json_decode($transportationCost->original['costoTransportacion']);
+               $delivery->tranpostation_cost = $costoTransportacion;
                $delivery->save();
-
             }
 
             $order->delivery_cost_id = $delivery->id;
@@ -318,13 +331,16 @@ class OrderController extends ApiResponseController
                 $result = $this->sendEmail($order,$productsOrder);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order new is created successfully.']);
+                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'costoTransportacion'=>$transportationCost,'message'=>'Order new is created successfully.']);
                 }
             }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+
+            return $this->successResponse(['order' => $order, 'products' => $productsOrder,'costoTransportacion'=>$transportationCost,'message'=>'Order new is created successfully.']);
     }
+
+    return response()->json([
+        'message' => 'Error al validar'
+    ], 201);
 
   }
 
@@ -463,31 +479,6 @@ class OrderController extends ApiResponseController
                 }
             }
       }
-
-        $v_order = new  StoreOrderStatePut();
-        $validator = $request->validate($v_order->rules());
-        if ($validator){
-
-
-            if($order->state = 'en_progreso' ){
-
-                $result = $this->sendEmailMessenger($order,$productsOrder);
-                if(empty($result)){
-                    return $this->successResponse([$order,'Order assigned successfully.']);
-                }
-
-            }
-
-            if($order->state = 'entregada' ){
-
-                $result = $this->sendEmailMessenger($order,$productsOrder);
-                if(empty($result)){
-                    return $this->successResponse([$order,'Order assigned successfully.']);
-                }
-
-            }
-
-        }
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
@@ -563,7 +554,9 @@ class OrderController extends ApiResponseController
     public function destroy(Order $order)
     {
         $order->delete();
-        return $this->successResponse('Order deleted successfully.');
 
-   }
+       return $this->successResponse('Order deleted successfully.');
+
+
+  }
 }

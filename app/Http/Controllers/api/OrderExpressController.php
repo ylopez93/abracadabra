@@ -13,6 +13,7 @@ use App\Mail\SendMailExpress;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendMailMessengerExpress;
+use App\Mail\SendMailMessengerReasigned;
 use App\Mail\SendMailOrderCancelExpress;
 use App\Http\Requests\StoreOrderStatePut;
 use App\Http\Requests\StoreOrderExpressPut;
@@ -119,12 +120,21 @@ class OrderExpressController extends ApiResponseController
             $v_delivery = new StoreDeliveryCostPost();
             $validator = $request->validate($v_delivery->rules());
             if($validator){
-               $delivery = new DeliveriesCost();
-               $delivery->from_municipality_id = $request['from_municipality_id'];
-               $delivery->to_municipality_id = $request['to_municipality_id'];
+                $delivery = new DeliveriesCost();
+                $delivery->from_municipality_id = $request['from_municipality_id'];
+                $delivery->to_municipality_id = $request['to_municipality_id'];
 
-               $transportationCost = DeliveryCostController::transportationCost($request);
-               $delivery->tranpostation_cost = $transportationCost;
+                //recibir las dos localizaciones como en latitude_to guiarme por orderController!!!!
+                
+                $delivery->latitude_from = $request['latitude_from'];
+                $delivery->longitude_from = $request['longitude_from'];
+                $delivery->latitude_to = $request['latitude_to'];
+                $delivery->longitude_to = $request['longitude_to'];
+                $delivery->distance = $request['distance'];
+
+                $transportationCost = DeliveryCostController::transportationCost($request);
+               $costoTransportacion = json_decode($transportationCost->original['costoTransportacion']);
+               $delivery->tranpostation_cost = $costoTransportacion;
                $delivery->save();
 
             }
@@ -132,18 +142,17 @@ class OrderExpressController extends ApiResponseController
             $order->delivery_cost_id = $delivery->id;
             $order->save();
 
-             //mandar un email al mensajero con los datos de la orden
+            // mandar un email al mensajero con los datos de la orden
 
-            // if($order->state = 'nueva'){
+            if($order->state = 'nueva'){
 
-            //     $result = $this->sendEmail($order);
-            //     if(empty($result)){
+                $result = $this->sendEmail($order);
+                if(empty($result)){
 
-            //         return $this->successResponse(['order' => $order,'Order new is created successfully.']);
-            //     }
+                    return $this->successResponse(['order' => $order,'costoDelivery'=>$transportationCost,'message'=>'Order new is created successfully.']);
+                }
 
-            // }
-             return $this->successResponse(['order' => $order,'Order new is created successfully.']);
+            }
 
         return response()->json([
             'message' => 'Error al validar'
@@ -237,6 +246,10 @@ class OrderExpressController extends ApiResponseController
         $cadena = Str::random(5);
         if ($validator) {
 
+            if($orderExpress->messenger_id != null){
+                $mesengerOld = Messenger::findOrFail($orderExpress->messenger_id);
+            }
+
             $orderExpress->object_details = $request['object_details'];
             $orderExpress->weigth = $request['weigth'];
             $orderExpress->state = $request['state'];
@@ -248,6 +261,14 @@ class OrderExpressController extends ApiResponseController
              //mandar un email al mensajero con los datos de la orden
 
              if($request->state == 'asignada'){
+                 if($mesengerOld != $orderExpress->messenger_id){
+
+                    $result =  $this->sendEmailCancelOrAsigned($orderExpress);
+                if(empty($result)){
+
+                    return $this->successResponse(['order' => $orderExpress,'Order asigned successfully.']);
+                }
+                }
 
                 $result =  $this->sendEmailCancelOrAsigned($orderExpress);
                 if(empty($result)){
@@ -263,30 +284,7 @@ class OrderExpressController extends ApiResponseController
                 }
             }
 
-            $v_order = new StoreOrderStatePut();
-            $validator = $request->validate($v_order->rules());
-            if ($validator){
 
-
-            if($orderExpress->state = 'en_progreso' ){
-
-                $result = $this->sendEmailMessenger($orderExpress);
-                if(empty($result)){
-                    return $this->successResponse([$orderExpress,'Order assigned successfully.']);
-                }
-
-            }
-
-            if($orderExpress->state = 'entregada' ){
-
-                $result = $this->sendMailMessengerExpress($orderExpress);
-                if(empty($result)){
-                    return $this->successResponse([$orderExpress,'Order assigned successfully.']);
-                }
-
-            }
-
-        }
 
         return response()->json([
             'message' => 'Error al validar'
@@ -337,9 +335,19 @@ class OrderExpressController extends ApiResponseController
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
 
-          }else{
+          }if($orderasignada->state == 'cancelada'){
             $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailOrderCancelExpress($title, $customer_details,$order_details));
+            if (empty($sendmail)) {
+              return response()->json(['message'
+              => 'Mail Sent Sucssfully'], 200);
+              }else{
+                  return response()->json(['message' => 'Mail Sent fail'], 400);
+                 }
+          }
+          else{
+            $sendmail = Mail::to($customer_details['email'])
+            ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
               => 'Mail Sent Sucssfully'], 200);

@@ -13,12 +13,13 @@ use Illuminate\Http\Request;
 use App\Mail\SendMailMototaxi;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\SendMailMessengerMototaxi;
+use App\Mail\SendMailMessengerReasigned;
 use App\Http\Requests\StoreOrderStatePut;
+use App\Mail\SendMailOrderCancelMototaxi;
 use App\Http\Requests\StoreDeliveryCostPost;
 use App\Http\Requests\StoreOrderMototaxiPut;
 use App\Http\Requests\StoreOrderMototaxiPost;
-use App\Mail\SendMailMessengerMototaxi;
-use App\Mail\SendMailOrderCancelMototaxi;
 
 class OrderMototaxiController extends ApiResponseController
 {
@@ -100,9 +101,9 @@ class OrderMototaxiController extends ApiResponseController
             $order->code = 'ABRAMOTOTAXI' . $cadena;
             $order->locality_from_id = $request['locality_from'];
             $order->cell = $request['cell_from'];
-            $order->address_from = $request['address_from'];
+            $order->address_from = $request['adress_from'];
             $order->locality_to_id = $request['locality_to'];
-            $order->address_to = $request['address_to'];
+            $order->address_to = $request['adress_to'];
             $order->state = 'nueva';
             $order->user_id = $request['user_id'];
             $order->messenger_id = $request['messenger_id'];
@@ -111,12 +112,18 @@ class OrderMototaxiController extends ApiResponseController
             $v_delivery = new StoreDeliveryCostPost();
             $validator = $request->validate($v_delivery->rules());
             if($validator){
-               $delivery = new DeliveriesCost();
-               $delivery->from_municipality_id = $request['from_municipality_id'];
-               $delivery->to_municipality_id = $request['to_municipality_id'];
+                $delivery = new DeliveriesCost();
+                $delivery->from_municipality_id = $request['from_municipality_id'];
+                $delivery->to_municipality_id = $request['to_municipality_id'];
+                $delivery->latitude_from = $request['latitude_from'];
+                $delivery->longitude_from = $request['longitude_from'];
+                $delivery->latitude_to = $request['latitude_to'];
+                $delivery->longitude_to = $request['longitude_to'];
+                $delivery->distance = $request['distance'];
 
-               $transportationCost = DeliveryCostController::transportationCost($request);
-               $delivery->tranpostation_cost = $transportationCost;
+                $transportationCost = DeliveryCostController::transportationCost($request);
+               $costoTransportacion = json_decode($transportationCost->original['costoTransportacion']);
+               $delivery->tranpostation_cost = $costoTransportacion;
                $delivery->save();
 
             }
@@ -126,15 +133,15 @@ class OrderMototaxiController extends ApiResponseController
 
              //mandar un email al mensajero con los datos de la orden
 
-            // if($order->state = 'nueva'){
+            if($order->state = 'nueva'){
 
-            //     $result = $this->sendEmail($order);
-            //     if(empty($result)){
+                $result = $this->sendEmail($order);
+                if(empty($result)){
 
-            //         return $this->successResponse(['order' => $order,'Order new is created successfully.']);
-            //     }
+                    return $this->successResponse(['order' => $order,'Order new is created successfully.']);
+                }
 
-            // }
+            }
              return $this->successResponse(['order' => $order,'Order new is created successfully.']);
 
         return response()->json([
@@ -218,11 +225,15 @@ class OrderMototaxiController extends ApiResponseController
         $validator = $request->validate($v_order->rules());
         if ($validator) {
 
+            if($order->messenger_id != null){
+                $mesengerOld = Messenger::findOrFail($order->messenger_id);
+            }
+
             $order->locality_from_id = $request['locality_from'];
             $order->cell = $request['cell_from'];
-            $order->address_from = $request['address_from'];
+            $order->address_from = $request['adress_from'];
             $order->locality_to_id = $request['locality_to'];
-            $order->address_to = $request['address_to'];
+            $order->address_to = $request['adress_to'];
             $order->state = $request['state'];
             $order->user_id = $request['user_id'];
             $order->messenger_id = $request['messenger_id'];
@@ -232,6 +243,15 @@ class OrderMototaxiController extends ApiResponseController
              //mandar un email al mensajero con los datos de la orden
 
              if($request->state == 'asignada'){
+
+                if($mesengerOld != $order->messenger_id){
+
+                    $result =  $this->sendEmailCancelOrAsigned($order);
+                if(empty($result)){
+
+                    return $this->successResponse(['order' => $order,'Order asigned successfully.']);
+                }
+                }
 
                 $result =  $this->sendEmailCancelOrAsigned($order);
                 if(empty($result)){
@@ -247,30 +267,6 @@ class OrderMototaxiController extends ApiResponseController
                 }
             }
 
-            $v_order = new StoreOrderStatePut();
-            $validator = $request->validate($v_order->rules());
-            if ($validator){
-
-
-            if($order->state = 'en_progreso' ){
-
-                $result = $this->sendEmailMessenger($order);
-                if(empty($result)){
-                    return $this->successResponse([$order,'Order assigned successfully.']);
-                }
-
-            }
-
-            if($order->state = 'entregada' ){
-
-                $result = $this->sendMailMessengerExpress($order);
-                if(empty($result)){
-                    return $this->successResponse([$order,'Order assigned successfully.']);
-                }
-
-            }
-
-        }
 
         return response()->json([
             'message' => 'Error al validar'
@@ -318,9 +314,20 @@ class OrderMototaxiController extends ApiResponseController
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
 
-          }else{
+          }if($orderasignada->state == 'cancelada'){
             $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailOrderCancelMototaxi($title, $customer_details,$order_details));
+            if (empty($sendmail)) {
+              return response()->json(['message'
+              => 'Mail Sent Sucssfully'], 200);
+              }else{
+                  return response()->json(['message' => 'Mail Sent fail'], 400);
+                 }
+          }
+
+          else{
+            $sendmail = Mail::to($customer_details['email'])
+            ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
               => 'Mail Sent Sucssfully'], 200);

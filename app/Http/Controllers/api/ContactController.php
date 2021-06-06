@@ -48,6 +48,10 @@ class ContactController extends ApiResponseController
            $contacts->phone = $request['phone'];
            $contacts->movil_phone = $request['movil_phone'];
            $contacts->description = $request['description'];
+           $contacts->latitude = $request['latitude'];
+           $contacts->longitude = $request['longitude'];
+           $contacts->price_first_km = $request['price_first_km'];
+           $contacts->price_km = $request['price_km'];
            $contacts->save();
 
         // $product = Product::create($request);
@@ -104,6 +108,10 @@ class ContactController extends ApiResponseController
         $contact->phone = $request['phone'];
         $contact->movil_phone = $request['movil_phone'];
         $contact->description = $request['description'];
+        $contact->latitude = $request['latitude'];
+        $contact->longitude = $request['longitude'];
+        $contact->price_first_km = $request['price_first_km'];
+        $contact->price_km = $request['price_km'];
         $contact->save();
         return $this->successResponse([$contact, 'Contact updated successfully.']);
         }

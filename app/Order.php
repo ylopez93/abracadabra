@@ -4,6 +4,7 @@ namespace App;
 
 use App\User;
 use App\Locality;
+use App\Location;
 use App\Messenger;
 use App\OrderProduct;
 use App\DeliveriesCost;
@@ -66,5 +67,9 @@ class Order extends Model
         return $this->belongsTo(DeliveriesCost::class);
     }
 
+    public function locations()
+    {
+        return $this->hasMany(Location::class);
+    }
 
 }

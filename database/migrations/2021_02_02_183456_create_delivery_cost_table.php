@@ -15,7 +15,12 @@ class CreateDeliveryCostTable extends Migration
     {
         Schema::create('deliveries_costs', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->decimal('latitude_from',10,8);
+            $table->decimal('longitude_from',11,8);
+            $table->decimal('latitude_to',10,8);
+            $table->decimal('longitude_to',11,8);
             $table->double('tranpostation_cost', 8, 2);
+            $table->double('distance',8,2);
             $table->timestamps();
         });
     }

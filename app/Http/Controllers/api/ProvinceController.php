@@ -6,8 +6,9 @@ use App\Province;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProvincePost;
+use App\Http\Controllers\api\ApiResponseController;
 
-class ProvinceController extends Controller
+class ProvinceController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -56,9 +57,7 @@ class ProvinceController extends Controller
         return $this->successResponse([$province, 'Province created successfully.']);
 
         }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+        return $this->successResponse(['Error al validar']);
     }
 
     /**
@@ -105,10 +104,10 @@ class ProvinceController extends Controller
             $province->name = $request['name'];
             $province->country_id = $request['country_id'];
             $province->save();
+
+            return $this->successResponse([$province, 'Province update successfully.']);
         }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+        return $this->successResponse(['Error al validar']);
     }
 
     /**

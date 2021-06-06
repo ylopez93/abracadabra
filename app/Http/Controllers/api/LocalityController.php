@@ -22,12 +22,12 @@ class LocalityController extends ApiResponseController
         return $this->successResponse([$localities,'Locality retrieved successfully.']);
     }
 
-    public function localitiesMunicipie(Request $request)
+    public function localitiesMunicipie($municipie_id)
     {
         $localities = Locality::
         select('localities.id','localities.name')
         ->join('municipies', 'municipies.id', '=', 'localities.municipie_id')
-        ->where('localities.municipie_id',[$request['municipie_id']])
+        ->where('localities.municipie_id',[$municipie_id])
         ->whereNull('localities.deleted_at')
         ->whereNull('municipies.deleted_at')
         ->get();

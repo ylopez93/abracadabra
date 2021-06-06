@@ -10,7 +10,16 @@ class DeliveriesCost extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['tranpostation_cost','from_municipality_id','to_municipality_id'];
+    protected $fillable = [
+        'tranpostation_cost',
+        'distance',
+        'from_municipality_id',
+        'to_municipality_id',
+        'latitude_from',
+        'longitude_from',
+        'latitude_to',
+        'longitude_to'
+    ];
 
     protected $hidden = ['created_at','updated_at'];
 

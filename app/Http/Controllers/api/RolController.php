@@ -25,16 +25,6 @@ class RolController extends ApiResponseController
         return $this->successResponse([$rol,'Rol retrieved successfully.']);
     }
 
-    public function findUsersByRol($rol){
-
-        $users = DB::table('users')->select('*')
-        ->where('rol_id','=',$rol)
-        ->whereNull('deleted_at')
-        ->get();
-
-        return $this->successResponse([$users, 'Users retrieved successfully.']);
-
-    }
 
     public function ordersFinished(){
 
@@ -131,6 +121,17 @@ class RolController extends ApiResponseController
         ->get();
 
         return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+    }
+
+    public function findUsersByRol($rol){
+
+        $users = DB::table('users')->select('*')
+        ->where('rol_id','=',$rol)
+        ->whereNull('deleted_at')
+        ->get();
+
+        return $this->successResponse([$users, 'Users retrieved successfully.']);
+
     }
 
     /**

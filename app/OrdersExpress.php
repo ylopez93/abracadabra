@@ -34,7 +34,6 @@ class OrdersExpress extends Model
         'user_id',
         'messenger_id',
         'message_cancel'
-
     ];
 
     protected $hidden = ['created_at','updated_at'];
@@ -58,5 +57,6 @@ class OrdersExpress extends Model
     {
         return $this->belongsTo(DeliveriesCost::class);
     }
+
 
 }
