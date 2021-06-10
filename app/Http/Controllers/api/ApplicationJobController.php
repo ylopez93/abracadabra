@@ -20,7 +20,7 @@ class ApplicationJobController extends ApiResponseController
     public function index()
     {
         $applications = ApplicationJob::all();
-        return $this->successResponse([$applications,'Application Jobs retrieved successfully.']);
+        return $this->successResponse(['applications'=>$applications,'message'=>'Application Jobs retrieved successfully.']);
     }
 
     public function applicationJobsAprove(Request $request)
@@ -35,7 +35,7 @@ class ApplicationJobController extends ApiResponseController
         ->whereNull('application_jobs_images.deleted_at')
         ->get();
 
-        return $this->successResponse(['applications'=>$applications,'Application Jobs retrieved successfully.']);
+        return $this->successResponse(['applications'=>$applications,'message'=>'Application Jobs retrieved successfully.']);
     }
     /**
      * Show the form for creating a new resource.
@@ -92,7 +92,7 @@ class ApplicationJobController extends ApiResponseController
             $applicationJobsImage->save();
            }
 
-        return $this->successResponse([$application, 'Application Jobs  created successfully.']);
+        return $this->successResponse(['application'=>$application, 'message'=>'Application Jobs  created successfully.']);
 
         }
         return response()->json([
@@ -174,7 +174,7 @@ class ApplicationJobController extends ApiResponseController
 
            }
 
-        return $this->successResponse([$applicationJob, 'Application Jobs  Update successfully.']);
+        return $this->successResponse(['applicationJob'=>$applicationJob,'message'=> 'Application Jobs  Update successfully.']);
         }
         return $this->successResponse(['message' => 'Error al validar']);
 

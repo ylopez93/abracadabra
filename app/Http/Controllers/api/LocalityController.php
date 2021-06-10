@@ -19,7 +19,7 @@ class LocalityController extends ApiResponseController
     public function index()
     {
         $localities = Locality::all();
-        return $this->successResponse([$localities,'Locality retrieved successfully.']);
+        return $this->successResponse(['localities'=>$localities,'message'=>'Locality retrieved successfully.']);
     }
 
     public function localitiesMunicipie($municipie_id)
@@ -31,7 +31,7 @@ class LocalityController extends ApiResponseController
         ->whereNull('localities.deleted_at')
         ->whereNull('municipies.deleted_at')
         ->get();
-        return $this->successResponse([$localities, 'Localities retrieved successfully.']);
+        return $this->successResponse(['localities'=>$localities, 'message'=>'Localities retrieved successfully.']);
     }
 
     /**
@@ -61,7 +61,7 @@ class LocalityController extends ApiResponseController
            $locality->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$locality, 'Locality created successfully.']);
+        return $this->successResponse(['locality'=>$locality,'message'=> 'Locality created successfully.']);
 
         }
         return response()->json([
@@ -80,10 +80,10 @@ class LocalityController extends ApiResponseController
         $locality = Locality::find($id);
 
         if(is_null($locality)){
-            return $this->successResponse('Locality  not found.');
+            return $this->successResponse(['message'=>'Locality  not found.']);
         }
 
-        return $this->successResponse([$locality,'Locality retrieved successfully.']);
+        return $this->successResponse(['locality'=>$locality,'message'=>'Locality retrieved successfully.']);
     }
 
     /**
@@ -112,7 +112,7 @@ class LocalityController extends ApiResponseController
         $locality->name = $request['name'];
         $locality->municipie_id = $request['municipie_id'];
         $locality->save();
-        return $this->successResponse([$locality, 'Locality updated successfully.']);
+        return $this->successResponse(['locality'=>$locality,'message'=> 'Locality updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -128,6 +128,6 @@ class LocalityController extends ApiResponseController
     public function destroy(Locality $locality)
     {
         $locality->delete();
-        return $this->successResponse('Locality deleted successfully.');
+        return $this->successResponse(['message'=>'Locality deleted successfully.']);
     }
 }

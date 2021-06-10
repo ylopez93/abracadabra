@@ -22,7 +22,7 @@ class RolController extends ApiResponseController
     public function index()
     {
         $rol = Rol::all();
-        return $this->successResponse([$rol,'Rol retrieved successfully.']);
+        return $this->successResponse(['rol'=>$rol,'message'=>'Rol retrieved successfully.']);
     }
 
 
@@ -70,7 +70,7 @@ class RolController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     public function ordersActive(){
@@ -120,7 +120,7 @@ class RolController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     public function findUsersByRol($rol){
@@ -130,7 +130,7 @@ class RolController extends ApiResponseController
         ->whereNull('deleted_at')
         ->get();
 
-        return $this->successResponse([$users, 'Users retrieved successfully.']);
+        return $this->successResponse(['users'=>$users,'message'=> 'Users retrieved successfully.']);
 
     }
 
@@ -160,7 +160,7 @@ class RolController extends ApiResponseController
            $rol->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$rol, 'Rol created successfully.']);
+        return $this->successResponse(['rol'=>$rol,'message'=> 'Rol created successfully.']);
 
         }
         return response()->json([
@@ -205,7 +205,7 @@ class RolController extends ApiResponseController
            $rol->name = $request['name'];
            $rol->save();
 
-        return $this->successResponse([$rol, 'Rol updated successfully.']);
+        return $this->successResponse(['rol'=>$rol, 'message'=>'Rol updated successfully.']);
 
         }
         return response()->json([
@@ -222,6 +222,6 @@ class RolController extends ApiResponseController
     public function destroy(Rol $rol)
     {
         $rol->delete();
-        return $this->successResponse('Rol deleted successfully.');
+        return $this->successResponse(['message'=>'Rol deleted successfully.']);
     }
 }

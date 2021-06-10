@@ -131,7 +131,7 @@ class DeliveryCostController extends ApiResponseController
            $delivery->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$delivery,'Deliveries created successfully.']);
+        return $this->successResponse(['delivery'=>$delivery,'message'=>'Deliveries created successfully.']);
 
         }
         return response()->json([
@@ -148,6 +148,6 @@ class DeliveryCostController extends ApiResponseController
     public function destroy(DeliveriesCost $deliveryCost)
     {
         $deliveryCost->delete();
-        return $this->successResponse('DeliveryCost deleted successfully.');
+        return $this->successResponse(['message'=>'DeliveryCost deleted successfully.']);
     }
 }

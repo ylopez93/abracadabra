@@ -23,7 +23,7 @@ class LocationController extends ApiResponseController
         select('locations.*')
         ->whereNull('locations.deleted_at')
         ->get();
-        return $this->successResponse([$locations, 'Locations retrieved successfully.']);
+        return $this->successResponse(['locations'=>$locations,'message'=>'Locations retrieved successfully.']);
     }
 
     public function locationsOrder(Request $request)
@@ -35,7 +35,7 @@ class LocationController extends ApiResponseController
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->get();
-                return $this->successResponse([$locations, 'Locations retrieved successfully.']);
+                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
             elseif ($modulo =  Str::contains($request['order_code'],'ABRAEXPRESS')) {
                 $locations = Location::
@@ -43,7 +43,7 @@ class LocationController extends ApiResponseController
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->get();
-                return $this->successResponse([$locations, 'Locations retrieved successfully.']);
+                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
             else {
                 $locations = Location::
@@ -51,7 +51,7 @@ class LocationController extends ApiResponseController
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->get();
-                return $this->successResponse([$locations, 'Locations retrieved successfully.']);
+                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
 
 
@@ -84,10 +84,10 @@ class LocationController extends ApiResponseController
            $location->order_code = $request['order_code'];
            $location->save();
 
-        return $this->successResponse([$location, 'Location created successfully.']);
+        return $this->successResponse(['location'=>$location,'message'=> 'Location created successfully.']);
 
         }
-        return $this->successResponse(['Error al validar']);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -128,9 +128,9 @@ class LocationController extends ApiResponseController
             $location->longitude = $request['longitude'];
             $location->save();
 
-            return $this->successResponse([$location, 'Location update successfully.']);
+            return $this->successResponse(['location'=>$location,'message'=> 'Location update successfully.']);
         }
-        return $this->successResponse(['Error al validar']);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -142,7 +142,7 @@ class LocationController extends ApiResponseController
     public function destroy(Location $location)
     {
         $location->delete();
-        return $this->successResponse('Location deleted successfully.');
+        return $this->successResponse(['message'=>'Location deleted successfully.']);
     }
 
 

@@ -51,7 +51,7 @@ class OrderController extends ApiResponseController
         ->get();
 
 
-        return $this->successResponse([$orders,'Orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'message'=>'Orders retrieved successfully.']);
     }
 
 
@@ -116,7 +116,7 @@ class OrderController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     public function ordersActive($userId){
@@ -190,7 +190,7 @@ class OrderController extends ApiResponseController
         ->get();
 
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     public function orderProduct(Order $order)
@@ -231,7 +231,7 @@ class OrderController extends ApiResponseController
         whereNotNull('orders.messenger_id')->
         get();
 
-        return $this->successResponse([$order,$products,$messenger,'Products retrieved successfully.']);
+        return $this->successResponse(['order'=>$order,'products'=>$products,'messenger'=>$messenger,'message'=>'Products retrieved successfully.']);
 
     }
 
@@ -403,10 +403,10 @@ class OrderController extends ApiResponseController
         $order = Order::find($id);
 
         if (is_null($order)) {
-            return $this->successResponse('Order not found.');
+            return $this->successResponse(['message'=>'Order not found.']);
         }
 
-        return $this->successResponse([$order, 'Product retrieved successfully.']);
+        return $this->successResponse(['order'=>$order, 'message'=>'Product retrieved successfully.']);
     }
 
     /**
@@ -459,14 +459,14 @@ class OrderController extends ApiResponseController
                     $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order asigned successfully.']);
                 }
                 }
 
                 $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order asigned successfully.']);
                 }
             }
 
@@ -475,7 +475,7 @@ class OrderController extends ApiResponseController
 
                 $result = $this->sendEmailCancelOrAsigned($order,$productsOrder);
                 if(empty($result)){
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'Order cancel successfully.']);
+                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order cancel successfully.']);
                 }
             }
       }
@@ -555,7 +555,7 @@ class OrderController extends ApiResponseController
     {
         $order->delete();
 
-       return $this->successResponse('Order deleted successfully.');
+       return $this->successResponse(['message'=>'Order deleted successfully.']);
 
 
   }

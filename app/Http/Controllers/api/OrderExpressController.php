@@ -42,7 +42,7 @@ class OrderExpressController extends ApiResponseController
         ->whereNull('orders_expresses.deleted_at')
         ->get();
 
-        return $this->successResponse([$orders,'Orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'message'=>'Orders retrieved successfully.']);
     }
 
 
@@ -72,7 +72,7 @@ class OrderExpressController extends ApiResponseController
         whereNotNull('orders_expresses.messenger_id')->
         get();
 
-        return $this->successResponse([$order,$messenger,'Details retrieved successfully.']);
+        return $this->successResponse(['order'=>$order,'messenger'=>$messenger,'message'=>'Details retrieved successfully.']);
 
     }
     /**
@@ -125,7 +125,7 @@ class OrderExpressController extends ApiResponseController
                 $delivery->to_municipality_id = $request['to_municipality_id'];
 
                 //recibir las dos localizaciones como en latitude_to guiarme por orderController!!!!
-                
+
                 $delivery->latitude_from = $request['latitude_from'];
                 $delivery->longitude_from = $request['longitude_from'];
                 $delivery->latitude_to = $request['latitude_to'];
@@ -214,10 +214,10 @@ class OrderExpressController extends ApiResponseController
         $order = OrdersExpress::find($id);
 
         if (is_null($order)) {
-            return $this->successResponse('Order not found.');
+            return $this->successResponse(['message'=>'Order not found.']);
         }
 
-        return $this->successResponse([$order, 'Order retrieved successfully.']);
+        return $this->successResponse(['order'=>$order,'message'=> 'Order retrieved successfully.']);
     }
 
     /**
@@ -266,21 +266,21 @@ class OrderExpressController extends ApiResponseController
                     $result =  $this->sendEmailCancelOrAsigned($orderExpress);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $orderExpress,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order asigned successfully.']);
                 }
                 }
 
                 $result =  $this->sendEmailCancelOrAsigned($orderExpress);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $orderExpress,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order asigned successfully.']);
                 }
             }
             if($request->state == 'cancelada' ){
 
                 $result = $this->sendEmailCancelOrAsigned($orderExpress);
                 if(empty($result)){
-                    return $this->successResponse(['order' => $orderExpress,'Order cancel successfully.']);
+                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order cancel successfully.']);
                 }
             }
 
@@ -368,6 +368,6 @@ class OrderExpressController extends ApiResponseController
     {
         $orderExpress = OrdersExpress::findOrFail($request['id']);
         $orderExpress->delete();
-        return $this->successResponse('Order deleted successfully.');
+        return $this->successResponse(['message'=>'Order deleted successfully.']);
     }
 }

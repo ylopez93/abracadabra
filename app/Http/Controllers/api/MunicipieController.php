@@ -18,7 +18,7 @@ class MunicipieController extends ApiResponseController
     public function index()
     {
         $municipies = Municipie::all();
-        return $this->successResponse([$municipies,'Municipie retrieved successfully.']);
+        return $this->successResponse(['municipies'=>$municipies,'message'=>'Municipie retrieved successfully.']);
     }
 
     public function municipieUsers(Municipie $municipie)
@@ -55,7 +55,7 @@ class MunicipieController extends ApiResponseController
            $municipie->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$municipie, 'Municipie created successfully.']);
+        return $this->successResponse(['municipie'=>$municipie,'message'=> 'Municipie created successfully.']);
 
         }
         return response()->json([
@@ -74,10 +74,10 @@ class MunicipieController extends ApiResponseController
         $municipie = Municipie::find($id);
 
         if(is_null($municipie)){
-            return $this->successResponse('Municipie  not found.');
+            return $this->successResponse(['message'=>'Municipie  not found.']);
         }
 
-        return $this->successResponse([$municipie,'Municipie retrieved successfully.']);
+        return $this->successResponse(['municipie'=>$municipie,'message'=>'Municipie retrieved successfully.']);
     }
 
     /**
@@ -107,7 +107,7 @@ class MunicipieController extends ApiResponseController
         $municipie->price = $request['price'];
         $municipie->province_id = $request['province_id'];
         $municipie->save();
-        return $this->successResponse([$municipie, 'Municipie updated successfully.']);
+        return $this->successResponse(['municipie'=>$municipie,'message'=> 'Municipie updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -123,6 +123,6 @@ class MunicipieController extends ApiResponseController
     public function destroy(Municipie $municipie)
     {
         $municipie->delete();
-        return $this->successResponse('Municipie deleted successfully.');
+        return $this->successResponse(['message'=>'Municipie deleted successfully.']);
     }
 }

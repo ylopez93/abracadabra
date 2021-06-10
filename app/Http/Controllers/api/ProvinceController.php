@@ -18,7 +18,7 @@ class ProvinceController extends ApiResponseController
     public function index()
     {
         $provinces = Province::all();
-        return $this->successResponse([$provinces,'Province retrieved successfully.']);
+        return $this->successResponse(['provinces'=>$provinces,'message'=>'Province retrieved successfully.']);
     }
 
     public function provincesMunicipies(Province $province)
@@ -54,10 +54,10 @@ class ProvinceController extends ApiResponseController
            $province->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$province, 'Province created successfully.']);
+        return $this->successResponse(['province'=>$province,'message'=> 'Province created successfully.']);
 
         }
-        return $this->successResponse(['Error al validar']);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -71,10 +71,10 @@ class ProvinceController extends ApiResponseController
         $province = Province::find($id);
 
         if(is_null($province)){
-            return $this->successResponse('Province  not found.');
+            return $this->successResponse(['message'=>'Province  not found.']);
         }
 
-        return $this->successResponse([$province,'Province retrieved successfully.']);
+        return $this->successResponse(['province'=>$province,'message'=>'Province retrieved successfully.']);
     }
 
     /**
@@ -105,9 +105,9 @@ class ProvinceController extends ApiResponseController
             $province->country_id = $request['country_id'];
             $province->save();
 
-            return $this->successResponse([$province, 'Province update successfully.']);
+            return $this->successResponse([$province,'message'=> 'Province update successfully.']);
         }
-        return $this->successResponse(['Error al validar']);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -119,6 +119,6 @@ class ProvinceController extends ApiResponseController
     public function destroy(Province $province)
     {
         $province->delete();
-        return $this->successResponse('Province deleted successfully.');
+        return $this->successResponse(['message'=>'Province deleted successfully.']);
     }
 }

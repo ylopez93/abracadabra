@@ -26,7 +26,7 @@ class ProductController extends ApiResponseController
         join('product_images','product_images.product_image_id','=','products.id')->
         select('products.*','product_categories.id as product_category_id','product_categories.name as category','product_images.name as image')->
         orderBy('products.created_at','desc')->paginate(10);
-        return $this->successResponse([$products,'Products retrieved successfully.']);
+        return $this->successResponse(['products'=>$products,'message'=>'Products retrieved successfully.']);
 
     }
 
@@ -89,10 +89,10 @@ class ProductController extends ApiResponseController
         $product = Product::find($id);
 
         if(is_null($product)){
-            return $this->successResponse('Product not found.');
+            return $this->successResponse(['message'=>'Product not found.']);
         }
 
-        return $this->successResponse([$product,'Product retrieved successfully.']);
+        return $this->successResponse(['product'=>$product,'message'=>'Product retrieved successfully.']);
 
     }
 
@@ -147,7 +147,7 @@ class ProductController extends ApiResponseController
 
         }
 
-        return $this->successResponse([$product, 'Product updated successfully.']);
+        return $this->successResponse(['product'=>$product, 'message'=>'Product updated successfully.']);
         }
         return $this->successResponse(['message' => 'Error al validar']);
 
@@ -163,7 +163,7 @@ class ProductController extends ApiResponseController
     public function destroy(Product $product)
     {
         $product->delete();
-        return $this->successResponse('Product deleted successfully.');
+        return $this->successResponse(['message'=>'Product deleted successfully.']);
     }
 
 

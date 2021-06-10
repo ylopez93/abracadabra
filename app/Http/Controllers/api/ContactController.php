@@ -18,7 +18,7 @@ class ContactController extends ApiResponseController
     public function index()
     {
         $contacts = Contact::all();
-        return $this->successResponse([$contacts,'Messengers retrieved successfully.']);
+        return $this->successResponse(['contacts'=>$contacts,'message'=>'Messengers retrieved successfully.']);
     }
 
     /**
@@ -55,7 +55,7 @@ class ContactController extends ApiResponseController
            $contacts->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$contacts, 'Contact created successfully.']);
+        return $this->successResponse(['contacts'=>$contacts,'message'=> 'Contact created successfully.']);
 
         }
         return response()->json([
@@ -74,10 +74,10 @@ class ContactController extends ApiResponseController
         $contact = Contact::find($id);
 
         if(is_null($contact)){
-            return $this->successResponse('Contact  not found.');
+            return $this->successResponse(['message'=>'Contact  not found.']);
         }
 
-        return $this->successResponse([$contact,'Contact retrieved successfully.']);
+        return $this->successResponse(['contact'=>$contact,'message'=>'Contact retrieved successfully.']);
     }
 
     /**
@@ -113,7 +113,7 @@ class ContactController extends ApiResponseController
         $contact->price_first_km = $request['price_first_km'];
         $contact->price_km = $request['price_km'];
         $contact->save();
-        return $this->successResponse([$contact, 'Contact updated successfully.']);
+        return $this->successResponse(['contact'=>$contact,'message'=> 'Contact updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -129,6 +129,6 @@ class ContactController extends ApiResponseController
     public function destroy(Contact $contact)
     {
         $contact->delete();
-        return $this->successResponse('Contact deleted successfully.');
+        return $this->successResponse(['message'=>'Contact deleted successfully.']);
     }
 }

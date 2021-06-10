@@ -42,7 +42,7 @@ class OrderMototaxiController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse([$orders,'Orders Mototaxi retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'message'=>'Orders Mototaxi retrieved successfully.']);
 
     }
 
@@ -71,7 +71,7 @@ class OrderMototaxiController extends ApiResponseController
         whereNotNull('orders_mototaxis.messenger_id')->
         get();
 
-        return $this->successResponse([$order,$messenger,'Details retrieved successfully.']);
+        return $this->successResponse(['order'=>$order,'messenger'=>$messenger,'message'=>'Details retrieved successfully.']);
 
     }
 
@@ -138,11 +138,11 @@ class OrderMototaxiController extends ApiResponseController
                 $result = $this->sendEmail($order);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order,'Order new is created successfully.']);
+                    return $this->successResponse(['order' => $order,'message'=>'Order new is created successfully.']);
                 }
 
             }
-             return $this->successResponse(['order' => $order,'Order new is created successfully.']);
+             return $this->successResponse(['order' => $order,'message'=>'Order new is created successfully.']);
 
         return response()->json([
             'message' => 'Error al validar'
@@ -249,21 +249,21 @@ class OrderMototaxiController extends ApiResponseController
                     $result =  $this->sendEmailCancelOrAsigned($order);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $order,'message'=>'Order asigned successfully.']);
                 }
                 }
 
                 $result =  $this->sendEmailCancelOrAsigned($order);
                 if(empty($result)){
 
-                    return $this->successResponse(['order' => $order,'Order asigned successfully.']);
+                    return $this->successResponse(['order' => $order,'message'=>'Order asigned successfully.']);
                 }
             }
             if($request->state == 'cancelada' ){
 
                 $result = $this->sendEmailCancelOrAsigned($order);
                 if(empty($result)){
-                    return $this->successResponse(['order' => $order,'Order cancel successfully.']);
+                    return $this->successResponse(['order' => $order,'message'=>'Order cancel successfully.']);
                 }
             }
 
@@ -348,6 +348,6 @@ class OrderMototaxiController extends ApiResponseController
     {
         $orderMototaxi = OrdersMototaxi::findOrFail($request['id']);
         $orderMototaxi->delete();
-        return $this->successResponse('Order deleted successfully.');
+        return $this->successResponse(['message'=>'Order deleted successfully.']);
     }
 }

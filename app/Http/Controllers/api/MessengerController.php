@@ -24,7 +24,7 @@ class MessengerController extends ApiResponseController
     public function index()
     {
         $messengers = Messenger::all();
-        return $this->successResponse([$messengers,'Messengers retrieved successfully.']);
+        return $this->successResponse(['messengers'=>$messengers,'message'=>'Messengers retrieved successfully.']);
     }
 
     public function odersAsigned(Request $request)
@@ -32,7 +32,7 @@ class MessengerController extends ApiResponseController
         $messenger = DB::select('select messengers.id from messengers where messengers.user_id = ?', [$request['userId']]);
         if(empty($messenger)){
 
-            return $this->successResponse(['El mensajero que busca no existe.']);
+            return $this->successResponse(['message'=>'El mensajero que busca no existe.']);
         }
         $messengerId = $messenger[0]->id;
 
@@ -87,7 +87,7 @@ class MessengerController extends ApiResponseController
         ->whereNull('messengers.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'Orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'Orders retrieved successfully.']);
     }
 
     public function ordersFinished(Request $request){
@@ -155,7 +155,7 @@ class MessengerController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     public function ordersActive(Request $request){
@@ -208,7 +208,7 @@ class MessengerController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders retrieved successfully.']);
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
     }
 
     /**
@@ -254,7 +254,7 @@ class MessengerController extends ApiResponseController
            $userUpdate->rol_id = '3';
            $userUpdate->save();
 
-        return $this->successResponse([$messenger, 'Messenger created successfully.']);
+        return $this->successResponse(['messenger'=>$messenger,'message'=> 'Messenger created successfully.']);
 
         }
         return response()->json([
@@ -273,10 +273,10 @@ class MessengerController extends ApiResponseController
         $messenger = Messenger::find($id);
 
         if(is_null($messenger)){
-            return $this->successResponse('Messenger  not found.');
+            return $this->successResponse(['message'=>'Messenger  not found.']);
         }
 
-        return $this->successResponse([$messenger,'Messenger retrieved successfully.']);
+        return $this->successResponse(['messenger'=>$messenger,'message'=>'Messenger retrieved successfully.']);
     }
 
     /**
@@ -322,7 +322,7 @@ class MessengerController extends ApiResponseController
 
         $messenger->save();
 
-        return $this->successResponse([$messenger, 'Messenger updated successfully.']);
+        return $this->successResponse(['messenger'=>$messenger,'message'=> 'Messenger updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -338,7 +338,7 @@ class MessengerController extends ApiResponseController
     public function destroy(Messenger $messenger)
     {
         $messenger->delete();
-        return $this->successResponse('Messenger deleted successfully.');
+        return $this->successResponse(['message'=>'Messenger deleted successfully.']);
 
    }
 }

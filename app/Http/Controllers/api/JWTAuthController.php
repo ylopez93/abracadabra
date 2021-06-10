@@ -65,10 +65,10 @@ class JWTAuthController extends ApiResponseController
                 $result = $this->sendEmailVerify($data);
 
             } else {
-                return $this->successResponse(['El usuario ' .$request->email. ' ya esta insertado']);
+                return $this->successResponse(['message'=> 'El usuario ' .$request->email. ' ya esta insertado']);
             }
         }else {
-            return $this->successResponse(['Error al validar']);
+            return $this->successResponse(['message'=> 'Error al validar']);
         }
     }
 
@@ -84,9 +84,9 @@ class JWTAuthController extends ApiResponseController
            ->send(new SendMailVerify($title, $customer_details));
               if (empty($sendmail)) {
 
-             return $this->successResponse(['Mensaje Enviado Correctamente.']);
+             return $this->successResponse(['message'=> 'Mensaje Enviado Correctamente.']);
               }else{
-                 return $this->successResponse(['Error al enviar el mensaje.']);
+                 return $this->successResponse(['message'=> 'Error al enviar el mensaje.']);
 
                 }
 
@@ -98,7 +98,7 @@ class JWTAuthController extends ApiResponseController
         $user = User::where('confirmation_code', $code)->first();
         if (! $user){
              //redireccionar al register o mostrar una notificacion de que tiene que activar su cuenta
-             return $this->successResponse(['el codigo de confirmacion es incorrecto ']);
+             return $this->successResponse(['message'=> 'el codigo de confirmacion es incorrecto ']);
         }
         $user->confirmed = true;
         $user->confirmation_code = null;
@@ -106,7 +106,7 @@ class JWTAuthController extends ApiResponseController
         $user->save();
 
         //ver q devolver aqui para redireccionar a la vista del login
-        return $this->successResponse(['El usuario ' .$user->email. ' Ha confirmado correctamente su correo']);
+        return $this->successResponse(['message'=> 'El usuario ' .$user->email. ' Ha confirmado correctamente su correo']);
 
     }
 
@@ -217,14 +217,14 @@ class JWTAuthController extends ApiResponseController
 
         //obtener token request tipo POST
         //$token = $request->bearerToken();
-        
+
 
     // devuelve todos los users insertados en el sistema
 
     public function index()
     {
         $users = User::all();
-        return $this->successResponse([$users,'User retrieved successfully.']);
+        return $this->successResponse(['users'=>$users,'message'=> 'User retrieved successfully.']);
     }
 
 
@@ -240,7 +240,7 @@ class JWTAuthController extends ApiResponseController
         $user->active = $request['active'];
         $user->save();
 
-        return $this->successResponse([$user, 'User updated successfully.']);
+        return $this->successResponse(['user'=>$user,'message'=>  'User updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -250,7 +250,7 @@ class JWTAuthController extends ApiResponseController
     public function destroy(User $user)
     {
         $user->delete();
-        return $this->successResponse('User deleted successfully.');
+        return $this->successResponse(['message'=> 'User deleted successfully.']);
 
    }
 

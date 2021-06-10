@@ -26,7 +26,7 @@ class UserProductController extends ApiResponseController
         INNER JOIN product_images ON products.id = product_images.product_image_id
         where user_products.user_id = ? AND user_products.deleted_at IS NULL', [$userId]);
 
-        return $this->successResponse([$productsCar, 'Products retrieved successfully.']);
+        return $this->successResponse(['productsCar'=>$productsCar, 'message'=>'Products retrieved successfully.']);
     }
 
     public function emptyCart(Request $request){
@@ -71,16 +71,16 @@ class UserProductController extends ApiResponseController
                 $product->save();
 
             }else {
-                return $this->successResponse(['el producto no esta disponible']);
+                return $this->successResponse(['message'=>'el producto no esta disponible']);
             }
 
         } else {
-            return $this->successResponse(['el producto ya esta en el carrito']);
+            return $this->successResponse(['message'=>'el producto ya esta en el carrito']);
         }
 
         $countCart = $this->countCart($userId);
 
-        return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+        return $this->successResponse(['countCart'=>$countCart, 'message'=>'Products retrieved successfully.']);
     }
 
     //cantidad de productos del carrito
@@ -96,10 +96,10 @@ class UserProductController extends ApiResponseController
 
         if($countCart[0]->count == null  ){
             $countCart[0]->count = 0;
-            return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+            return $this->successResponse(['countCart'=>$countCart,'message'=> 'Products retrieved successfully.']);
         }
 
-        return $this->successResponse([$countCart, 'Products retrieved successfully.']);
+        return $this->successResponse(['countCart'=>$countCart, 'message'=>'Products retrieved successfully.']);
     }
 
 
@@ -114,7 +114,7 @@ class UserProductController extends ApiResponseController
             ->whereNull('deleted_at')
             ->get();
 
-        return $this->successResponse([$TotalPrice, 'Products retrieved successfully.']);
+        return $this->successResponse(['TotalPrice'=>$TotalPrice,'message'=> 'Products retrieved successfully.']);
     }
 
 
@@ -144,10 +144,10 @@ class UserProductController extends ApiResponseController
 
         } else {
 
-            return $this->successResponse(['Por favor revise su cantidad a actualizar, es mayor que el producto disponible: '.$product->stock]);
+            return $this->successResponse(['message'=>'Por favor revise su cantidad a actualizar, es mayor que el producto disponible: '.$product->stock]);
         }
 $product->state = 'archived';
-        return $this->successResponse([$productExist, 'Cantidad Actualizada.']);
+        return $this->successResponse(['productExist'=>$productExist,'message'=> 'Cantidad Actualizada.']);
     }
 
     //eliminar carrito
@@ -156,7 +156,7 @@ $product->state = 'archived';
     {
         $userId = auth()->user()->id;
         DB::delete('delete from user_products where user_id = ?', [$userId]);
-        return $this->successResponse('Cart empty successfully.');
+        return $this->successResponse(['message'=>'Cart empty successfully.']);
     }
 
     public function deleteProductCart(Request $request)
