@@ -26,15 +26,20 @@ class LocationController extends ApiResponseController
         return $this->successResponse(['locations'=>$locations,'message'=>'Locations retrieved successfully.']);
     }
 
+
+    //Cambiar para que devuelva la ultima insercion hecha que corresponda a order_code pasado por el request
+
     public function locationsOrder(Request $request)
     {
-         $modulo =  Str::contains($request['code'],'ABRAME');
+         $modulo =  Str::contains($request['order_code'],'ABRAME');
             if($modulo){
                 $locations = Location::
                 select('locations.*')
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
+                ->latest()->take(1)
                 ->get();
+
                 return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
             elseif ($modulo =  Str::contains($request['order_code'],'ABRAEXPRESS')) {
@@ -42,18 +47,21 @@ class LocationController extends ApiResponseController
                 select('locations.*')
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
+                ->latest()->take(1)
                 ->get();
                 return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
-            else {
+            elseif ($modulo =  Str::contains($request['order_code'],'ABRAMOTOTAXI')){
                 $locations = Location::
                 select('locations.*')
                 ->where('locations.order_code',[$request['order_code']])
                 ->whereNull('locations.deleted_at')
+                ->latest()->take(1)
                 ->get();
                 return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
             }
 
+        return $this->successResponse(['message'=>'No existen localizaciones pertenecientes a ese codigo de orden']);
 
     }
 

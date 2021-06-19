@@ -107,7 +107,6 @@ class JWTAuthController extends ApiResponseController
 
         //ver q devolver aqui para redireccionar a la vista del login
         return $this->successResponse(['message'=> 'El usuario ' .$user->email. ' Ha confirmado correctamente su correo']);
-
     }
 
     public function login(Request $request)
@@ -116,6 +115,7 @@ class JWTAuthController extends ApiResponseController
         $user = User::find($id[0]->id);
         $v_user = User::where('email', '=', $request['email']);
         if($v_user != null){
+            if ($user->active == 'active' ) {
 
             $credentials = $request->only(['email', 'password']);
             $payloadable = $user->getJWTCustomClaims();
@@ -127,7 +127,6 @@ class JWTAuthController extends ApiResponseController
                 ], 401);
             }
 
-
             $jwt_token = Auth::fromUser($user,$payloadable);
             $user = Auth::authenticate($request->token);
 
@@ -136,8 +135,16 @@ class JWTAuthController extends ApiResponseController
                 'token' => $jwt_token,
                 'data' => $user,
             ]);
+            }
+
+            return  response()->json([
+                'message' => 'El usuario ' .$user->name. ' Debe activar su cuenta en Abracadabra, revise su cuenta de correo',
+            ]);
 
         }
+
+
+
 
     }
 

@@ -93,12 +93,19 @@ class OrderMototaxiController extends ApiResponseController
      */
     public function store(Request $request)
     {
+
+        $string_to = $request['lonlat_to'];
+        $string_from = $request['lonlat_from'];
+        $arrayLocationsTo = explode(';',$string_to);
+        $arrayLocationsFrom = explode(';',$string_from);
+        $module =  'ABRAMOTOTAXI';
+
         $v_order = new StoreOrderMototaxiPost();
         $validator = $request->validate($v_order->rules());
         $cadena = Str::random(5);
         if ($validator) {
             $order = new OrdersMototaxi();
-            $order->code = 'ABRAMOTOTAXI' . $cadena;
+            $order->code = $module . $cadena;
             $order->locality_from_id = $request['locality_from'];
             $order->cell = $request['cell_from'];
             $order->address_from = $request['adress_from'];
@@ -115,10 +122,10 @@ class OrderMototaxiController extends ApiResponseController
                 $delivery = new DeliveriesCost();
                 $delivery->from_municipality_id = $request['from_municipality_id'];
                 $delivery->to_municipality_id = $request['to_municipality_id'];
-                $delivery->latitude_from = $request['latitude_from'];
-                $delivery->longitude_from = $request['longitude_from'];
-                $delivery->latitude_to = $request['latitude_to'];
-                $delivery->longitude_to = $request['longitude_to'];
+                $delivery->longitude_to = $arrayLocationsTo[0];
+                $delivery->latitude_to = $arrayLocationsTo[1];
+                $delivery->longitude_from = $arrayLocationsFrom[0];
+                $delivery->latitude_from = $arrayLocationsFrom[1];
                 $delivery->distance = $request['distance'];
 
                 $transportationCost = DeliveryCostController::transportationCost($request);

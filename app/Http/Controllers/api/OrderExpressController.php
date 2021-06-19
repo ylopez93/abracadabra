@@ -93,12 +93,18 @@ class OrderExpressController extends ApiResponseController
      */
     public function store(Request $request)
     {
+        $string_to = $request['lonlat_to'];
+        $string_from = $request['lonlat_from'];
+        $arrayLocationsTo = explode(';',$string_to);
+        $arrayLocationsFrom = explode(';',$string_from);
+        $module =  'ABRAEXPRESS';
+
         $v_order = new StoreOrderExpressPost();
         $validator = $request->validate($v_order->rules());
         $cadena = Str::random(5);
         if ($validator) {
             $order = new OrdersExpress();
-            $order->code = 'ABRAEXPRESS' . $cadena;
+            $order->code = $module . $cadena;
             $order->name_r = $request['name_r'];
             $order->address_r = $request['address_r'];
             $order->cell_r = $request['cell_r'];
@@ -123,22 +129,18 @@ class OrderExpressController extends ApiResponseController
                 $delivery = new DeliveriesCost();
                 $delivery->from_municipality_id = $request['from_municipality_id'];
                 $delivery->to_municipality_id = $request['to_municipality_id'];
-
-                //recibir las dos localizaciones como en latitude_to guiarme por orderController!!!!
-
-                $delivery->latitude_from = $request['latitude_from'];
-                $delivery->longitude_from = $request['longitude_from'];
-                $delivery->latitude_to = $request['latitude_to'];
-                $delivery->longitude_to = $request['longitude_to'];
+                $delivery->longitude_to = $arrayLocationsTo[0];
+                $delivery->latitude_to = $arrayLocationsTo[1];
+                $delivery->longitude_from = $arrayLocationsFrom[0];
+                $delivery->latitude_from = $arrayLocationsFrom[1];
                 $delivery->distance = $request['distance'];
 
                 $transportationCost = DeliveryCostController::transportationCost($request);
-               $costoTransportacion = json_decode($transportationCost->original['costoTransportacion']);
-               $delivery->tranpostation_cost = $costoTransportacion;
-               $delivery->save();
+                $costoTransportacion = json_decode($transportationCost->original['costoTransportacion']);
+                $delivery->tranpostation_cost = $costoTransportacion;
+                $delivery->save();
 
             }
-
             $order->delivery_cost_id = $delivery->id;
             $order->save();
 

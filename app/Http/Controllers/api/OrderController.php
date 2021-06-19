@@ -266,7 +266,7 @@ class OrderController extends ApiResponseController
         $cadena = Str::random(5);
         if ($validator) {
             $order = new Order();
-            $order->code = 'ABRAME' . $cadena;
+            $order->code = $module . $cadena;
             $order->user_name = $request['user_name'];
             $order->user_phone = $request['user_phone'];
             $order->user_address = $request['user_address'];

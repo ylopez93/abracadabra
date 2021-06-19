@@ -35,7 +35,6 @@ class DeliveryCostController extends ApiResponseController
 
     }
 
-
     public static function transportationCost(Request $request){
 
         $priceTotal = 0;

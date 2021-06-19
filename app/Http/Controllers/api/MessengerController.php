@@ -229,8 +229,7 @@ class MessengerController extends ApiResponseController
      */
     public function store(Request $request)
     {
-        $user = DB::select('select users.id from users where users.email = ?', [$request['email']]);
-        $user_id = $user[0]->id;
+        $user_id = $request['id'];
         $v_messenger = new StoreMessengerPost();
         $validator = $request->validate($v_messenger->rules());
         if($validator){
