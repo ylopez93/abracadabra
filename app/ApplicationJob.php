@@ -12,7 +12,7 @@ class ApplicationJob extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'name', 'surname', 'ci','phone','email','address','vehicle_registration','user_image_id','vehicle_image_id','state','employee_type'
+        'name', 'surname', 'ci','phone','email','address','vehicle_registration','state','employee_type'
     ];
 
     protected $hidden = ['created_at','updated_at'];

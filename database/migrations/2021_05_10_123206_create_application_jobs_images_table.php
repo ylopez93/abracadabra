@@ -16,7 +16,6 @@ class CreateApplicationJobsImagesTable extends Migration
         Schema::create('application_jobs_images', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->nullable();
-            $table->enum('state', ['mensajero','chapa'])->default('mensajero');
             $table->timestamps();
             $table->softDeletes();
         });

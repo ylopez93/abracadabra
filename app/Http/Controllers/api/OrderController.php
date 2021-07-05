@@ -231,7 +231,7 @@ class OrderController extends ApiResponseController
         whereNotNull('orders.messenger_id')->
         get();
 
-        return $this->successResponse(['order'=>$order,'products'=>$products,'messenger'=>$messenger,'message'=>'Products retrieved successfully.']);
+        return $this->successResponse(['order'=>$order, 'products'=>$products, 'messenger'=>$messenger]);
 
     }
 

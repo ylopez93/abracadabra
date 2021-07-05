@@ -49,7 +49,7 @@ class UserProductController extends ApiResponseController
 
         $userId = auth()->user()->id;
         $product = Product::findOrFail($request->id);
-        $productExist = DB::select('select user_products.product_id from user_products where user_products.deleted_at IS NULL AND user_products.product_id = ?', [$request->id]);
+        $productExist = DB::select('select user_products.product_id from user_products where user_products.deleted_at IS NULL AND user_products.product_id = ? AND user_products.user_id = ?', [$request->id,$userId]);
 
         if ($productExist == null) {
             if($product->stock != 0){
@@ -146,7 +146,7 @@ class UserProductController extends ApiResponseController
 
             return $this->successResponse(['message'=>'Por favor revise su cantidad a actualizar, es mayor que el producto disponible: '.$product->stock]);
         }
-$product->state = 'archived';
+        
         return $this->successResponse(['productExist'=>$productExist,'message'=> 'Cantidad Actualizada.']);
     }
 

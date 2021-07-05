@@ -126,5 +126,12 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::resource('location','api\LocationController');
     Route::post('location/locationByOrder','api\LocationController@locationsOrder');
 
+    //AplicationJobs
+    Route::resource('aplicationJob', 'api\ApplicationJobController');
+    Route::get('aprove','api\ApplicationJobController@applicationJobsAprove');
+    Route::post('deleteAplicationJob','api\ApplicationJobController@destroyAplicationJob');
+
+
+
 
 });

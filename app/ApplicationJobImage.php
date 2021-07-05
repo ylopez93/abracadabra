@@ -11,7 +11,7 @@ class ApplicationJobImage extends Model
     use SoftDeletes;
     protected $dates = ['deleted_at'];
 
-    protected $fillable = ['application_jobs_id','name','type'];
+    protected $fillable = ['application_jobs_id','name'];
 
     protected $hidden = ['created_at','updated_at'];
 
