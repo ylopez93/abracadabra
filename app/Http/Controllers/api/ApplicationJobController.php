@@ -8,8 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreApplicationJobPost;
-use App\Http\Requests\StoreApplicationJobPut
+use App\Http\Requests\StoreApplicationJobPut;
 use App\Http\Controllers\api\ApiResponseController;
+use App\User;
 
 class ApplicationJobController extends ApiResponseController
 {
@@ -133,32 +134,16 @@ class ApplicationJobController extends ApiResponseController
      * @param  \App\ApplicationJob  $applicationJob
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ApplicationJob $applicationJob)
+    public function update(Request $request, ApplicationJob $appJob)
     {
         $v_application = new StoreApplicationJobPut();
+        //$appJob = ApplicationJob::findOrFail('2');
         $validator = $request->validate($v_application->rules());
         if($validator){
-           $application = new ApplicationJob();
-           $application->name = $request['name'];
-           $application->surname = $request['surname'];
-           $application->ci = $request['ci'];
-           $application->phone = $request['phone'];
-           $application->email = $request['email'];
-           $application->address = $request['address'];
-           $application->vehicle_registration = $request['vehicle_registration'];
-           $application->state = $request['state'];
-           $application->employee_type = $request['employee_type'];
-           $application->save();
-
-           if ($request->hasFile('image_carnet')){
-
-            $filename = time() .".". $request->image->extension();
-            $request->image->move(public_path('images'),$filename);
-            $applicationJobsImage = new ApplicationJobImage();
-            $applicationJobsImage->name = $filename;
-            $applicationJobsImage->application_jobs_id = $application->id;
-            $applicationJobsImage->save();
-           }
+           $appJob->vehicle_registration = $request['vehicle_registration'];
+           $appJob->state = $request['state'];
+           $appJob->employee_type = $request['employee_type'];
+           $appJob->save();
 
            if($request['employee_type'] =='mensajero'){
             if ($request->hasFile('image_chapa')){
@@ -167,12 +152,20 @@ class ApplicationJobController extends ApiResponseController
             $request->image->move(public_path('images'),$filename);
             $applicationJobsImage = new ApplicationJobImage();
             $applicationJobsImage->name = $filename;
-            $applicationJobsImage->application_jobs_id = $application->id;
+            $applicationJobsImage->application_jobs_id = $appJob->id;
             $applicationJobsImage->save();
             }
+
+            if($appJob->state == 'aprobado'){
+                $idUser = DB::select('select users.id from users where email = ?', [$appJob->email]);
+                $user = User::findOrFail($idUser[0]->id);
+                $user->rol_id = '3';
+                $user->save();
+            }
+
            }
 
-        return $this->successResponse(['application'=>$application, 'message'=>'Application Jobs  created successfully.']);
+        return $this->successResponse(['application'=>$appJob, 'message'=>'Application Jobs  created successfully.']);
 
         }
         return response()->json([
@@ -187,10 +180,9 @@ class ApplicationJobController extends ApiResponseController
      * @return \Illuminate\Http\Response
      */
 
-    public function destroyAplicationJob(Request $request)
+    public function destroy(ApplicationJob $appJob)
     {
-        $applicationJob = ApplicationJob::findOrFail($request['id']);
-        $applicationJob->delete();
+        $appJob->delete();
         return $this->successResponse(['message'=>'Aplication Job deleted successfully.']);
     }
 }

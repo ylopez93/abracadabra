@@ -167,6 +167,18 @@ class ProductController extends ApiResponseController
     }
 
 
+    public function buscador(Request $request){
+
+        $products = Product::
+        where("name",'like',$request->text."%")
+        ->where("state","published")
+        ->whereNull("deleted_at")
+        ->take(10)->get();
+        return $this->successResponse(['product'=>$products, 'message'=>'find successfully.']);
+
+    }
+
+
 
 
 

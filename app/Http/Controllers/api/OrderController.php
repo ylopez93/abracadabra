@@ -358,15 +358,15 @@ class OrderController extends ApiResponseController
         'email' => $usuario->get('email')
         ];
         $order_details = [
-             'Codigo' => $orderasignada->get('code'),
-             'Nombre' => $orderasignada->get('user_name'),
-             'Teléfono' => $orderasignada->get('user_phone'),
-             'Dirección' => $orderasignada->get('user_address'),
-             'Localidad' => $locality->get('name'),
-            'Hora de entrega desde' => $orderasignada->get('pickup_time_from'),
-             'Hora de entrega hasta' => $orderasignada->get('pickup_time_to'),
-             'Mensaje' => $orderasignada->get('message'),
-             'Costo de Transportacion' => $costDelivery->get('tranpostation_cost'),
+             'Codigo' => $orderasignada->code,
+             'Nombre' => $orderasignada->user_name,
+             'Teléfono' => $orderasignada->user_phone,
+             'Dirección' => $orderasignada->user_address,
+             'Localidad' => $locality->name,
+            'Hora de entrega desde' => $orderasignada->pickup_time_from,
+             'Hora de entrega hasta' => $orderasignada->pickup_time_to,
+             'Mensaje' => $orderasignada->message,
+             'Costo de Transportacion' => $costDelivery->tranpostation_cost,
              'Productos'=>$productsOrder
 
         ];
@@ -495,21 +495,21 @@ class OrderController extends ApiResponseController
         $title = 'Le ha sido asignada una nueva orden';
 
         $customer_details = [
-        'name' => $mensajero->get('name'),
-        'email' => $mensajero->get('email')
+        'name' => $mensajero->name,
+        'email' => $mensajero->email
         ];
         $order_details = [
-             'Codigo' => $orderasignada->get('code'),
-             'Nombre' => $orderasignada->get('user_name'),
-             'Teléfono' => $orderasignada->get('user_phone'),
-             'Dirección' => $orderasignada->get('user_address'),
-             'Localidad' => $locality->get('name'),
-            'Hora de entrega desde' => $orderasignada->get('pickup_time_from'),
-             'Hora de entrega hasta' => $orderasignada->get('pickup_time_to'),
-             'Mensaje' => $orderasignada->get('message'),
-             'Costo de Transportacion' => $costDelivery->get('tranpostation_cost'),
+             'Codigo' => $orderasignada->code,
+             'Nombre' => $orderasignada->user_name,
+             'Teléfono' => $orderasignada->user_phone,
+             'Dirección' => $orderasignada->user_address,
+             'Localidad' => $locality->name,
+            'Hora de entrega desde' => $orderasignada->pickup_time_from,
+             'Hora de entrega hasta' => $orderasignada->pickup_time_to,
+             'Mensaje' => $orderasignada->message,
+             'Costo de Transportacion' => $costDelivery->tranpostation_cost,
              'Productos'=>$productsOrder,
-             'Message_Cancel'=> $orderasignada->get('message_cancel')
+             'Message_Cancel'=> $orderasignada->message_cancel
         ];
 
           if($orderasignada->state == 'asignada'){

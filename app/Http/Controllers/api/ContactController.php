@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Requests\StoreContactPost;
+use App\Mail\SendMailFormContact;
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends ApiResponseController
 {
@@ -130,5 +132,26 @@ class ContactController extends ApiResponseController
     {
         $contact->delete();
         return $this->successResponse(['message'=>'Contact deleted successfully.']);
+    }
+
+
+    //Mensaje de Contacto para enviar quejas o preguntas...
+
+    public function SendMailFormContact(Request $request){
+
+        $title = 'Quejas o inquietudes Abracadabra!!!';
+        $customer_details = [
+        'name' => $request['nombre'],
+        'email' => $request['email'],
+        'mensaje' => $request['mensaje'],
+        ];
+           $sendmail = Mail::to("abracadabra.tlscu@gmail.com")
+           ->send(new SendMailFormContact($title,$customer_details));
+           if (empty($sendmail)) {
+             return response()->json(['message'
+             => 'Mail Sent Sucssfully'], 200);
+             }else{
+                 return response()->json(['message' => 'Mail Sent fail'], 400);
+                }
     }
 }

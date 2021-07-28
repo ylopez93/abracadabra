@@ -37,6 +37,7 @@ Route::group(['middleware' => 'api','CORS'
     Route::post('sendEmail', 'api\MailController@sendEmail');
     Route::post('sendEmailMessenger', 'api\MailController@sendEmailMessenger');
     Route::get('register/verify/{code}', 'api\JWTAuthController@verify');
+    Route::post('product/find','api\ProductController@buscador');
 
 });
 
@@ -80,6 +81,7 @@ Route::group(['middleware' => 'auth:api','CORS',
 
     //Contact ****
     Route::resource('contact','api\ContactController');
+    Route::post('contact/sendMail','api\ContactController@SendMailFormContact');
 
     //Order ****
     Route::resource('order','api\OrderController');
@@ -127,9 +129,11 @@ Route::group(['middleware' => 'auth:api','CORS',
     Route::post('location/locationByOrder','api\LocationController@locationsOrder');
 
     //AplicationJobs
-    Route::resource('aplicationJob', 'api\ApplicationJobController');
+    Route::resource('appJob', 'api\ApplicationJobController');
     Route::get('aprove','api\ApplicationJobController@applicationJobsAprove');
     Route::post('deleteAplicationJob','api\ApplicationJobController@destroyAplicationJob');
+
+
 
 
 
