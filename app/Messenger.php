@@ -13,7 +13,7 @@ class Messenger extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'name', 'surname', 'ci','phone','email','address','vehicle_registration','image','user_id'
+        'name', 'surname', 'ci','phone','address','vehicle_registration','image','user_id'
     ];
 
     protected $hidden = ['created_at','updated_at'];

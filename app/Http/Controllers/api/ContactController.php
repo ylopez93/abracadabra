@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\api;
 
+
 use App\Contact;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
-use App\Http\Requests\StoreContactPost;
 use App\Mail\SendMailFormContact;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\StoreContactPost;
+use App\Http\Controllers\api\ApiResponseController;
 
 class ContactController extends ApiResponseController
 {

@@ -99,6 +99,11 @@ Route::group(['middleware' => 'auth:api','CORS',
      Route::get('orderDetailsMoto/{order}','api\OrderMototaxiController@orderDetailsMoto');
      Route::post('deleteMototaxi','api\OrderMototaxiController@destroyMototaxi');
 
+     //OrderLoquesea
+    Route::resource('orderloquesea','api\OrdersLoqueseaController');
+    Route::get('orderDetails/{order}','api\OrdersLoqueseaController@orderDetails');
+    Route::post('deleteloquesea','api\OrdersLoqueseaController@destroyLoquesea');
+
     //Country ****
     Route::resource('country','api\CountryController');
     Route::get('country/{country}/province','api\CountryController@countryPorvinces');

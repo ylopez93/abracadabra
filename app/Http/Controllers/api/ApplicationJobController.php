@@ -22,25 +22,33 @@ class ApplicationJobController extends ApiResponseController
     public function index()
     {
         $applications = ApplicationJob::all();
-        return $this->successResponse(['applications'=>$applications,'message'=>'Application Jobs retrieved successfully.']);
+        return $this->successResponse(['applications' => $applications, 'message' => 'Application Jobs retrieved successfully.']);
     }
 
     public function applicationJobsAproveMenssenger()
     {
-        $applications = ApplicationJob::
-        join('application_jobs_images', 'application_jobs.id', '=', 'application_jobs_images.application_jobs_id')
-        ->select('application_jobs.name as nombre','application_jobs.surname','application_jobs.phone','application_jobs.email','application_jobs.ci',
-        'application_jobs.address','application_jobs.vehicle_registration','application_jobs_images.name as image')
-        ->orderBy('application_jobs.created_at', 'desc')
-        ->where('application_jobs.state','aprobado')
-        ->where([
-            ['application_jobs.state', '=','aprobado'],
-            ['application_jobs.employee_type','=','mensajero']])
-        ->whereNull('application_jobs.deleted_at')
-        ->whereNull('application_jobs_images.deleted_at')
-        ->get();
+        $applications = ApplicationJob::join('application_jobs_images', 'application_jobs.id', '=', 'application_jobs_images.application_jobs_id')
+            ->select(
+                'application_jobs.name as nombre',
+                'application_jobs.surname',
+                'application_jobs.phone',
+                'application_jobs.email',
+                'application_jobs.ci',
+                'application_jobs.address',
+                'application_jobs.vehicle_registration',
+                'application_jobs_images.name as image'
+            )
+            ->orderBy('application_jobs.created_at', 'desc')
+            ->where('application_jobs.state', 'aprobado')
+            ->where([
+                ['application_jobs.state', '=', 'aprobado'],
+                ['application_jobs.employee_type', '=', 'mensajero']
+            ])
+            ->whereNull('application_jobs.deleted_at')
+            ->whereNull('application_jobs_images.deleted_at')
+            ->get();
 
-        return $this->successResponse(['applications'=>$applications,'message'=>'Application Jobs retrieved successfully.']);
+        return $this->successResponse(['applications' => $applications, 'message' => 'Application Jobs retrieved successfully.']);
     }
     /**
      * Show the form for creating a new resource.
@@ -60,45 +68,46 @@ class ApplicationJobController extends ApiResponseController
      */
     public function store(Request $request)
     {
+        $emailU = DB::select('select users.email from users where id = ?', [$request['idUser']]);
+        $email = $emailU[0]->email;
         $v_application = new StoreApplicationJobPost();
         $validator = $request->validate($v_application->rules());
-        if($validator){
-           $application = new ApplicationJob();
-           $application->name = $request['name'];
-           $application->surname = $request['surname'];
-           $application->ci = $request['ci'];
-           $application->phone = $request['phone'];
-           $application->email = $request['email'];
-           $application->address = $request['address'];
-           $application->vehicle_registration = $request['vehicle_registration'];
-           $application->state = $request['state'];
-           $application->employee_type = $request['employee_type'];
-           $application->save();
+        if ($validator) {
+            $application = new ApplicationJob();
+            $application->name = $request['name'];
+            $application->surname = $request['surname'];
+            $application->ci = $request['ci'];
+            $application->phone = $request['phone'];
+            $application->email = $email;
+            $application->address = $request['address'];
+            $application->vehicle_registration = $request['vehicle_registration'];
+            $application->state = $request['state'];
+            $application->employee_type = $request['employee_type'];
+            $application->save();
 
-           if ($request->hasFile('image_carnet')){
+            if ($request->hasFile('image_carnet')) {
 
-            $filename = time() .".". $request->image->extension();
-            $request->image->move(public_path('images'),$filename);
-            $applicationJobsImage = new ApplicationJobImage();
-            $applicationJobsImage->name = $filename;
-            $applicationJobsImage->application_jobs_id = $application->id;
-            $applicationJobsImage->save();
-           }
-
-           if($request['employee_type'] =='mensajero'){
-            if ($request->hasFile('image_chapa')){
-
-            $filename = time() .".". $request->image->extension();
-            $request->image->move(public_path('images'),$filename);
-            $applicationJobsImage = new ApplicationJobImage();
-            $applicationJobsImage->name = $filename;
-            $applicationJobsImage->application_jobs_id = $application->id;
-            $applicationJobsImage->save();
+                $filename = time() . "." . $request->image_carnet->extension();
+                $request->image_carnet->move(public_path('images'), $filename);
+                $applicationJobsImage = new ApplicationJobImage();
+                $applicationJobsImage->name = $filename;
+                $applicationJobsImage->application_jobs_id = $application->id;
+                $applicationJobsImage->save();
             }
-           }
 
-        return $this->successResponse(['application'=>$application, 'message'=>'Application Jobs  created successfully.']);
+            if ($request['employee_type'] == 'mensajero') {
+                if ($request->hasFile('image_chapa')) {
 
+                    $filename = time() . "." . $request->image_chapa->extension();
+                    $request->image_chapa->move(public_path('images'), $filename);
+                    $applicationJobsImage = new ApplicationJobImage();
+                    $applicationJobsImage->name = $filename;
+                    $applicationJobsImage->application_jobs_id = $application->id;
+                    $applicationJobsImage->save();
+                }
+            }
+
+            return $this->successResponse(['application' => $application, 'message' => 'Application Jobs  created successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -139,34 +148,21 @@ class ApplicationJobController extends ApiResponseController
         $v_application = new StoreApplicationJobPut();
         //$appJob = ApplicationJob::findOrFail('2');
         $validator = $request->validate($v_application->rules());
-        if($validator){
-           $appJob->vehicle_registration = $request['vehicle_registration'];
-           $appJob->state = $request['state'];
-           $appJob->employee_type = $request['employee_type'];
-           $appJob->save();
+        if ($validator) {
+            $appJob->state = $request['state'];
+            $appJob->save();
 
-           if($request['employee_type'] =='mensajero'){
-            if ($request->hasFile('image_chapa')){
+            if ($request['employee_type'] == 'mensajero') {
 
-            $filename = time() .".". $request->image->extension();
-            $request->image->move(public_path('images'),$filename);
-            $applicationJobsImage = new ApplicationJobImage();
-            $applicationJobsImage->name = $filename;
-            $applicationJobsImage->application_jobs_id = $appJob->id;
-            $applicationJobsImage->save();
+                if ($appJob->state == 'aprobado') {
+                    $idUser = DB::select('select users.id from users where email = ?', [$appJob->email]);
+                    $user = User::findOrFail($idUser[0]->id);
+                    $user->rol_id = '3';
+                    $user->save();
+                }
             }
 
-            if($appJob->state == 'aprobado'){
-                $idUser = DB::select('select users.id from users where email = ?', [$appJob->email]);
-                $user = User::findOrFail($idUser[0]->id);
-                $user->rol_id = '3';
-                $user->save();
-            }
-
-           }
-
-        return $this->successResponse(['application'=>$appJob, 'message'=>'Application Jobs  created successfully.']);
-
+            return $this->successResponse(['application' => $appJob, 'message' => 'Application Jobs  created successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -183,6 +179,6 @@ class ApplicationJobController extends ApiResponseController
     public function destroy(ApplicationJob $appJob)
     {
         $appJob->delete();
-        return $this->successResponse(['message'=>'Aplication Job deleted successfully.']);
+        return $this->successResponse(['message' => 'Aplication Job deleted successfully.']);
     }
 }

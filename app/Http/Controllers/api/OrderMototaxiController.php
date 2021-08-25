@@ -11,6 +11,7 @@ use App\OrdersMototaxi;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\SendMailMototaxi;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendMailMessengerMototaxi;
@@ -228,52 +229,62 @@ class OrderMototaxiController extends ApiResponseController
      */
     public function update(Request $request, OrdersMototaxi $order)
     {
+        $mesengerOld = null;
         $v_order = new StoreOrderMototaxiPut();
         $validator = $request->validate($v_order->rules());
         if ($validator) {
 
-            if($order->messenger_id != null){
-                $mesengerOld = Messenger::findOrFail($order->messenger_id);
+            if($order->state == "en_progreso" ){
+
+                if($request['state'] == 'terminada'){
+                    $order->state = $request['state'];
+                    $order->save();
+                }
+
             }
 
-            $order->locality_from_id = $request['locality_from'];
-            $order->cell = $request['cell_from'];
-            $order->address_from = $request['adress_from'];
-            $order->locality_to_id = $request['locality_to'];
-            $order->address_to = $request['adress_to'];
-            $order->state = $request['state'];
-            $order->user_id = $request['user_id'];
-            $order->messenger_id = $request['messenger_id'];
-            $order->message_cancel = $request['message_cancel'];
-            $order->save();
+             elseif($order->messenger_id != null){
+                $mesengerOld = Messenger::findOrFail($order->messenger_id);
+
+                $order->locality_from_id = $request['locality_from'];
+                $order->cell = $request['cell_from'];
+                $order->address_from = $request['adress_from'];
+                $order->locality_to_id = $request['locality_to'];
+                $order->address_to = $request['adress_to'];
+                $order->state = $request['state'];
+                $order->user_id = $request['user_id'];
+                $order->messenger_id = $request['messenger_id'];
+                $order->message_cancel = $request['message_cancel'];
+                $order->save();
+              }
 
              //mandar un email al mensajero con los datos de la orden
 
-             if($request->state == 'asignada'){
+             switch ($request->state) {
 
-                if($mesengerOld != $order->messenger_id){
+                case 'asignada':
+                    if($mesengerOld == null){
+                        $result =  $this->sendEmailCancelOrAsigned($order);
+                        if(empty($result)){
+                        return response()->json(['message'=>'Order asigned successfully.'], 201);
+                        }
+                    }else{
+                        if($mesengerOld != null && $mesengerOld != $order->messenger_id){
+                        $result = $this->sendEmailReasigned($order,$mesengerOld);
+                        if(empty($result)){
+                            return response()->json(['message'=>'Order has been reasigned successfully.'], 201);
+                            }
+                      }
+                    }
+                    break;
 
-                    $result =  $this->sendEmailCancelOrAsigned($order);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $order,'message'=>'Order asigned successfully.']);
-                }
-                }
-
-                $result =  $this->sendEmailCancelOrAsigned($order);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $order,'message'=>'Order asigned successfully.']);
-                }
+                case 'cancelada':
+                    $result = $this->sendEmailCancelOrAsigned($order);
+                    if(empty($result)){
+                        return response()->json(['message'=>'Order has been canceled successfully.'], 201);
+                        }
+                    break;
             }
-            if($request->state == 'cancelada' ){
-
-                $result = $this->sendEmailCancelOrAsigned($order);
-                if(empty($result)){
-                    return $this->successResponse(['order' => $order,'message'=>'Order cancel successfully.']);
-                }
-            }
-
 
         return response()->json([
             'message' => 'Error al validar'
@@ -286,54 +297,80 @@ class OrderMototaxiController extends ApiResponseController
 
         $orderasignada = OrdersMototaxi::findOrFail($order->id);
         $mensajero = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mensajero->user_id]);
+        $email = $email_mensajero[0]->email;
         $orderasignada = OrdersMototaxi::findOrFail($order->id);
         $localityF = Locality::findOrFail($order->locality_from_id);
         $localityT = Locality::findOrFail($order->locality_to_id);
         $costDelivery = DeliveriesCost::findOrFail($order->delivery_cost_id);
         $municipalityF= Municipie::findOrFail($costDelivery->from_municipality_id);
         $municipalityT= Municipie::findOrFail($costDelivery->to_municipality_id);
-        $title = 'Le ha sido asignada una nueva orden';
 
         $customer_details = [
-        'name' => $mensajero->get('name'),
-        'email' => $mensajero->get('email')
+        'name' => $mensajero->name,
+        'email' => $email
         ];
         $order_details = [
-            'Codigo' => $orderasignada->get('code'),
-            'Municipio de Origen' => $municipalityF->get('name'),
-            'Localidad de Origen' => $localityF->get('name'),
-            'Dirección de Origen' => $orderasignada->get('address_from'),
-            'Teléfono' => $orderasignada->get('cell'),
-            'Localidad Destino' => $localityT->get('name'),
-            'Municipio Destino' => $municipalityT->get('name'),
-            'Dirección Destino' => $orderasignada->get('address_to'),
-            'Costo de Transportacion' => $costDelivery->get('tranpostation_cost'),
-            'Message_Cancel' => $orderasignada->get('message_cancel'),
+            'Codigo' => $orderasignada->code,
+            'Municipio de Origen' => $municipalityF->name,
+            'Localidad de Origen' => $localityF->name,
+            'Dirección de Origen' => $orderasignada->address_from,
+            'Teléfono' => $orderasignada->cell,
+            'Localidad Destino' => $localityT->name,
+            'Municipio Destino' => $municipalityT->name,
+            'Dirección Destino' => $orderasignada->address_to,
+            'Costo de Transportacion' => $costDelivery->tranpostation_cost,
+            'Message_Cancel' => $orderasignada->message_cancel,
         ];
 
-          if($orderasignada->state == 'asignada'){
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailMessengerMototaxi($title, $customer_details,$order_details));
-            if (empty($sendmail)) {
-              return response()->json(['message'
-              => 'Mail Sent Sucssfully'], 200);
-              }else{
-                  return response()->json(['message' => 'Mail Sent fail'], 400);
-                 }
+        switch ($orderasignada->state) {
+            case 'asignada':
+                $title = 'Le ha sido asignada una nueva orden';
 
-          }if($orderasignada->state == 'cancelada'){
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailOrderCancelMototaxi($title, $customer_details,$order_details));
-            if (empty($sendmail)) {
-              return response()->json(['message'
-              => 'Mail Sent Sucssfully'], 200);
-              }else{
-                  return response()->json(['message' => 'Mail Sent fail'], 400);
-                 }
-          }
+                $sendmail = Mail::to($customer_details['email'])
+                ->send(new SendMailMessengerMototaxi($title, $customer_details,$order_details));
+                if (empty($sendmail)) {
+                  return response()->json(['message'
+                  => 'Mail Sent Sucssfully'], 200);
+                  }else{
+                      return response()->json(['message' => 'Mail Sent fail'], 400);
+                     }
+                break;
 
-          else{
-            $sendmail = Mail::to($customer_details['email'])
+            case 'cancelada':
+                $title = 'Orden Cancelada';
+
+                $sendmail = Mail::to($customer_details['email'])
+                ->send(new SendMailOrderCancelMototaxi($title, $customer_details,$order_details));
+                if (empty($sendmail)) {
+                return response()->json(['message'
+                => 'Mail Sent Sucssfully'], 200);
+                }else{
+                    return response()->json(['message' => 'Mail Sent fail'], 400);
+                    }
+                break;
+        }
+
+    }
+
+
+    public function sendEmailReasigned($order,$mesengerOld){
+
+        $title = 'Orden Reasignada';
+        $orderasignada = OrdersMototaxi::findOrFail($order->id);
+        $mesengerOld = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mesengerOld->user_id]);
+        $email = $email_mensajero[0]->email;
+
+        $customer_details = [
+            'name' => $mesengerOld->name,
+            'email' => $email
+            ];
+        $order_details = [
+             'Codigo' => $orderasignada->code
+        ];
+
+        $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
@@ -341,7 +378,6 @@ class OrderMototaxiController extends ApiResponseController
               }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
-          }
 
     }
 

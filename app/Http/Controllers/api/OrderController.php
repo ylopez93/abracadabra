@@ -28,7 +28,9 @@ use App\Http\Controllers\api\ApiResponseController;
 use App\Http\Controllers\api\UserProductController;
 use App\Mail\SendMailMessengerMototaxi;
 use App\Mail\SendMailMessengerReasigned;
+use App\OrdersLoquesea;
 use App\OrdersMototaxi;
+use PhpParser\Node\Stmt\TryCatch;
 
 class OrderController extends ApiResponseController
 {
@@ -116,7 +118,26 @@ class OrderController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
+        $ordersLoquesea = OrdersLoquesea::
+        join('messengers', 'messengers.id', '=', 'orders_loqueseas.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_loqueseas.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_loqueseas.delivery_cost_id')
+        ->join('localities', 'localities.id', '=', 'orders_loqueseas.locality_id_d')
+        ->select('orders_loqueseas.id as order','orders_loqueseas.code','orders_loqueseas.from','orders_loqueseas.to',
+        'orders_loqueseas.phone','orders_loqueseas.pedido','orders_loqueseas.state','orders_loqueseas.message','localities.name',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','messengers.id as messenger_id')
+        ->where([
+            ['orders_loqueseas.user_id', '=', [$userId]],
+            ['orders_loqueseas.state','=','cancelada'],
+        ])->orWhere([
+            ['orders_loqueseas.user_id', '=', [$userId]],
+            ['orders_loqueseas.state','=','entregada']
+        ])
+        ->whereNull('orders_loqueseas.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders_abraloquesea'=> $ordersLoquesea,'message'=>'orders retrieved successfully.']);
     }
 
     public function ordersActive($userId){
@@ -189,8 +210,29 @@ class OrderController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
+        $ordersLoquesea = OrdersLoquesea::
+        join('messengers', 'messengers.id', '=', 'orders_loqueseas.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_loqueseas.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_loqueseas.delivery_cost_id')
+        ->join('localities', 'localities.id', '=', 'orders_loqueseas.locality_id_d')
+        ->select('orders_loqueseas.id as order','orders_loqueseas.code','orders_loqueseas.from','orders_loqueseas.to',
+        'orders_loqueseas.phone','orders_loqueseas.pedido','orders_loqueseas.state','orders_loqueseas.message','localities.name','users.id as user','users.name','users.email','messengers.id as messenger_id')
+        ->where([
+            ['orders_loqueseas.user_id', '=', [$userId]],
+            ['orders_loqueseas.state','=','nueva'],
+        ])->orWhere([
+            ['orders_loqueseas.user_id', '=', [$userId]],
+            ['orders_loqueseas.state','=','en_progreso']
+        ])->orWhere([
+            ['orders_loqueseas.user_id', '=', [$userId]],
+            ['orders_loqueseas.state','=','asignada']
+        ])
+        ->whereNull('orders_loqueseas.deleted_at')
+        ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders_abraloquesea'=>$ordersLoquesea,'message'=>'orders retrieved successfully.']);
     }
 
     public function orderProduct(Order $order)
@@ -436,9 +478,19 @@ class OrderController extends ApiResponseController
 
             //hacer una consulta a la bd para verificar si existe messenger_id y si lo hay,
             // guardarlo para, enviar sms de cancelacion o reasignacion
-            if($order->messenger_id != null){
-                $mesengerOld = Messenger::findOrFail($order->messenger_id);
+
+            if($order->state == "en_progreso" ){
+
+                if($request['state'] == 'terminada'){
+                    $order->state = $request['state'];
+                    $order->payment_state = 'done';
+                    $order->save();
+                }
+
             }
+            elseif($order->messenger_id != null){
+
+            $mesengerOld = Messenger::findOrFail($order->messenger_id);
 
             $order->delivery_time_to = $request['delivery_time_to'];
             $order->delivery_time_from = $request['delivery_time_from'];
@@ -449,36 +501,37 @@ class OrderController extends ApiResponseController
             $order->message_cancel = $request['message_cancel'];
             $order->save();
 
-            //mandar un email al mensajero con los datos de la orden
-
             $productsOrder = DB::select('select products.`name`,order_products.quantity,order_products.total from order_products join products ON products.id = order_products.product_id where order_products.order_id = ?', [$order->id]);
-
-            if($request->state == 'asignada'){
-                if($mesengerOld != $order->messenger_id){
-
-                    $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order asigned successfully.']);
-                }
-                }
-
-                $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order asigned successfully.']);
-                }
             }
 
-            //mandar un email al $this->sendEmailCancelOrAsigned($order,$productsOrder);usuario con los datos de la orden
-            if($request->state == 'cancelada' ){
+            //mandar un email al mensajero con los datos de la orden
+                switch ($request->state) {
 
-                $result = $this->sendEmailCancelOrAsigned($order,$productsOrder);
-                if(empty($result)){
-                    return $this->successResponse(['order' => $order, 'products' => $productsOrder,'message'=>'Order cancel successfully.']);
+                    case 'asignada':
+                        if($mesengerOld == null){
+                            $result =  $this->sendEmailCancelOrAsigned($order,$productsOrder);
+                            if(empty($result)){
+                            return response()->json(['message'=>'Order asigned successfully.'], 201);
+                            }
+                        }else{
+                            if($mesengerOld != null && $mesengerOld != $order->messenger_id){
+                            $result = $this->sendEmailReasigned($order,$mesengerOld);
+                            if(empty($result)){
+                                return response()->json(['message'=>'Order has been reasigned successfully.'], 201);
+                                }
+                          }
+                        }
+                        break;
+
+                    case 'cancelada':
+                        $result = $this->sendEmailCancelOrAsigned($order,$productsOrder);
+                        if(empty($result)){
+                            return response()->json(['message'=>'Order has been canceled successfully.'], 201);
+                            }
+                        break;
                 }
-            }
-      }
+
+        }
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
@@ -490,13 +543,14 @@ class OrderController extends ApiResponseController
 
         $orderasignada = Order::findOrFail($order->id);
         $mensajero = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mensajero->user_id]);
+        $email = $email_mensajero[0]->email;
         $locality = Locality::findOrFail($order->locality_id);
         $costDelivery = DeliveriesCost::findOrFail($order->delivery_cost_id);
-        $title = 'Le ha sido asignada una nueva orden';
 
         $customer_details = [
         'name' => $mensajero->name,
-        'email' => $mensajero->email
+        'email' => $email
         ];
         $order_details = [
              'Codigo' => $orderasignada->code,
@@ -512,17 +566,23 @@ class OrderController extends ApiResponseController
              'Message_Cancel'=> $orderasignada->message_cancel
         ];
 
-          if($orderasignada->state == 'asignada'){
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailMessenger($title, $customer_details,$order_details));
-            if (empty($sendmail)) {
-              return response()->json(['message'
-              => 'Mail Sent Sucssfully'], 200);
-              }else{
+        switch ($orderasignada->state) {
+            case 'asignada':
+                $title = 'Le ha sido asignada una nueva orden';
+
+                $sendmail = Mail::to($customer_details['email'])
+                ->send(new SendMailMessenger($title, $customer_details,$order_details));
+                if (empty($sendmail)) {
+                  return response()->json(['message'
+                  => 'Mail Sent Sucssfully'], 200);
+                 }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
+                break;
 
-          }if($orderasignada->state == 'cancelada'){
+            case 'cancelada':
+                $title = 'Orden Cancelada';
+
             $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailOrderCancel($title, $customer_details,$order_details));
             if (empty($sendmail)) {
@@ -531,17 +591,35 @@ class OrderController extends ApiResponseController
               }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
+                break;
+        }
 
-          }else{
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
+    }
+
+    public function sendEmailReasigned($order,$mesengerOld){
+
+        $title = 'Orden Reasignada';
+        $orderasignada = Order::findOrFail($order->id);
+        $mesengerOld = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mesengerOld->user_id]);
+        $email = $email_mensajero[0]->email;
+
+        $customer_details = [
+            'name' => $mesengerOld->name,
+            'email' => $email
+            ];
+        $order_details = [
+             'Codigo' => $orderasignada->code
+        ];
+
+        $sendmail = Mail::to($customer_details['email'])
+        ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
               => 'Mail Sent Sucssfully'], 200);
               }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
-          }
 
     }
 

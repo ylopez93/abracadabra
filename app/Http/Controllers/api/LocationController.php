@@ -19,50 +19,43 @@ class LocationController extends ApiResponseController
      */
     public function index()
     {
-        $locations = Location::
-        select('locations.*')
-        ->whereNull('locations.deleted_at')
-        ->get();
-        return $this->successResponse(['locations'=>$locations,'message'=>'Locations retrieved successfully.']);
+        $locations = Location::select('locations.*')
+            ->whereNull('locations.deleted_at')
+            ->get();
+        return $this->successResponse(['locations' => $locations, 'message' => 'Locations retrieved successfully.']);
     }
 
 
-    //Cambiar para que devuelva la ultima insercion hecha que corresponda a order_code pasado por el request
+    //Devuelve la ultima insercion hecha que corresponda a order_code pasado por el request
 
     public function locationsOrder(Request $request)
     {
-         $modulo =  Str::contains($request['order_code'],'ABRAME');
-            if($modulo){
-                $locations = Location::
-                select('locations.*')
-                ->where('locations.order_code',[$request['order_code']])
+        $modulo =  Str::contains($request['order_code'], 'ABRAME');
+        if ($modulo) {
+            $locations = Location::select('locations.*')
+                ->where('locations.order_code', [$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->latest()->take(1)
                 ->get();
 
-                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
-            }
-            elseif ($modulo =  Str::contains($request['order_code'],'ABRAEXPRESS')) {
-                $locations = Location::
-                select('locations.*')
-                ->where('locations.order_code',[$request['order_code']])
+            return $this->successResponse(['locations' => $locations, 'message' => 'Locations retrieved successfully.']);
+        } elseif ($modulo =  Str::contains($request['order_code'], 'ABRAEXPRESS')) {
+            $locations = Location::select('locations.*')
+                ->where('locations.order_code', [$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->latest()->take(1)
                 ->get();
-                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
-            }
-            elseif ($modulo =  Str::contains($request['order_code'],'ABRAMOTOTAXI')){
-                $locations = Location::
-                select('locations.*')
-                ->where('locations.order_code',[$request['order_code']])
+            return $this->successResponse(['locations' => $locations, 'message' => 'Locations retrieved successfully.']);
+        } elseif ($modulo =  Str::contains($request['order_code'], 'ABRAMOTOTAXI')) {
+            $locations = Location::select('locations.*')
+                ->where('locations.order_code', [$request['order_code']])
                 ->whereNull('locations.deleted_at')
                 ->latest()->take(1)
                 ->get();
-                return $this->successResponse(['locations'=>$locations, 'message'=>'Locations retrieved successfully.']);
-            }
+            return $this->successResponse(['locations' => $locations, 'message' => 'Locations retrieved successfully.']);
+        }
 
-        return $this->successResponse(['message'=>'No existen localizaciones pertenecientes a ese codigo de orden']);
-
+        return $this->successResponse(['message' => 'No existen localizaciones pertenecientes a ese codigo de orden']);
     }
 
     /**
@@ -83,19 +76,18 @@ class LocationController extends ApiResponseController
      */
     public function store(Request $request)
     {
-            $v_location = new StoreLocationPost();
+        $v_location = new StoreLocationPost();
         $validator = $request->validate($v_location->rules());
-        if($validator){
-           $location = new Location();
-           $location->latitude = $request['latitude'];
-           $location->longitude = $request['longitude'];
-           $location->order_code = $request['order_code'];
-           $location->save();
+        if ($validator) {
+            $location = new Location();
+            $location->latitude = $request['latitude'];
+            $location->longitude = $request['longitude'];
+            $location->order_code = $request['order_code'];
+            $location->save();
 
-        return $this->successResponse(['location'=>$location,'message'=> 'Location created successfully.']);
-
+            return $this->successResponse(['message' => 'Location created successfully.']);
         }
-        return $this->successResponse(['message'=>'Error al validar']);
+        return $this->successResponse(['message' => 'Error al validar']);
     }
 
     /**
@@ -131,14 +123,14 @@ class LocationController extends ApiResponseController
     {
         $v_location = new StoreLocationPut();
         $validator = $request->validate($v_location->rules());
-        if($validator){
+        if ($validator) {
             $location->latitude = $request['latitude'];
             $location->longitude = $request['longitude'];
             $location->save();
 
-            return $this->successResponse(['location'=>$location,'message'=> 'Location update successfully.']);
+            return $this->successResponse(['location' => $location, 'message' => 'Location update successfully.']);
         }
-        return $this->successResponse(['message'=>'Error al validar']);
+        return $this->successResponse(['message' => 'Error al validar']);
     }
 
     /**
@@ -150,10 +142,6 @@ class LocationController extends ApiResponseController
     public function destroy(Location $location)
     {
         $location->delete();
-        return $this->successResponse(['message'=>'Location deleted successfully.']);
+        return $this->successResponse(['message' => 'Location deleted successfully.']);
     }
-
-
-
-
 }

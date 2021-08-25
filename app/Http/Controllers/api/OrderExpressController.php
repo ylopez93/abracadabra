@@ -10,6 +10,7 @@ use App\DeliveriesCost;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\SendMailExpress;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendMailMessengerExpress;
@@ -245,12 +246,19 @@ class OrderExpressController extends ApiResponseController
     {
         $v_order = new StoreOrderExpressPut();
         $validator = $request->validate($v_order->rules());
-        $cadena = Str::random(5);
         if ($validator) {
 
-            if($orderExpress->messenger_id != null){
-                $mesengerOld = Messenger::findOrFail($orderExpress->messenger_id);
+            if($orderExpress->state == "en_progreso" ){
+
+                if($request['state'] == 'terminada'){
+                    $orderExpress->state = $request['state'];
+                    $orderExpress->save();
+                }
+
             }
+          elseif($orderExpress->messenger_id != null){
+
+            $mesengerOld = Messenger::findOrFail($orderExpress->messenger_id);
 
             $orderExpress->object_details = $request['object_details'];
             $orderExpress->weigth = $request['weigth'];
@@ -259,96 +267,124 @@ class OrderExpressController extends ApiResponseController
             $orderExpress->messenger_id = $request['messenger_id'];
             $orderExpress->message_cancel = $request['message_cancel'];
             $orderExpress->save();
+          }
 
-             //mandar un email al mensajero con los datos de la orden
 
-             if($request->state == 'asignada'){
-                 if($mesengerOld != $orderExpress->messenger_id){
+           //mandar un email al mensajero con los datos de la orden
+          switch ($request->state) {
 
+            case 'asignada':
+                if($mesengerOld == null){
                     $result =  $this->sendEmailCancelOrAsigned($orderExpress);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order asigned successfully.']);
+                    if(empty($result)){
+                        return response()->json(['message' => 'Order asigned successfully.'], 201);
+                    }
+                }else{
+                    if($mesengerOld != null && $mesengerOld != $orderExpress->messenger_id){
+                    $result = $this->sendEmailReasigned($orderExpress,$mesengerOld);
+                    if(empty($result)){
+                        return response()->json(['message' => 'Order has been reasigned successfully.'], 201);
+                        }
+                  }
                 }
-                }
+                break;
 
-                $result =  $this->sendEmailCancelOrAsigned($orderExpress);
-                if(empty($result)){
-
-                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order asigned successfully.']);
-                }
-            }
-            if($request->state == 'cancelada' ){
-
+            case 'cancelada':
                 $result = $this->sendEmailCancelOrAsigned($orderExpress);
                 if(empty($result)){
-                    return $this->successResponse(['order' => $orderExpress,'message'=>'Order cancel successfully.']);
-                }
-            }
+                    return response()->json(['message' => 'Order cancel successfully.'], 201);
+                    }
+                break;
+        }
 
-
-
+       }
         return response()->json([
             'message' => 'Error al validar'
         ], 201);
     }
-    }
+
 
     //funcion para enviar mensaje al mensajero cuando la orden es asignada
     public function sendEmailCancelOrAsigned ($order) {
 
         $orderasignada = OrdersExpress::findOrFail($order->id);
         $mensajero = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mensajero->user_id]);
+        $email = $email_mensajero[0]->email;
         $localityR = Locality::findOrFail($order->locality_id_r);
         $localityD = Locality::findOrFail($order->locality_id_d);
         $costDelivery = DeliveriesCost::findOrFail($order->delivery_cost_id);
-        $title = 'Le ha sido asignada una nueva orden';
 
         $customer_details = [
-        'name' => $mensajero->get('name'),
-        'email' => $mensajero->get('email')
+        'name' => $mensajero->name,
+        'email' => $email
         ];
         $order_details = [
-            'Codigo' => $orderasignada->get('code'),
-            'Nombre Remitente' => $orderasignada->get('name_r'),
-            'Dirección Remitente' => $orderasignada->get('address_r'),
-            'Móvil Remitente' => $orderasignada->get('cell_r'),
-            'Teléfono Remitente' => $orderasignada->get('phone_r'),
-            'Localidad Remitente' => $localityR->get('name'),
-            'Nombre Destinatario' => $orderasignada->get('name_d'),
-            'Dirección Destinatario' => $orderasignada->get('address_d'),
-            'Móvil Destinatario' => $orderasignada->get('cell_d'),
-            'Localidad Destinatario' => $localityD->get('name'),
-            'Detalles Objeto' => $orderasignada->get('object_details'),
-            'Peso' => $orderasignada->get('weigth'),
-            'Mensaje' => $orderasignada->get('message'),
-            'Costo de Transportacion' => $costDelivery->get('tranpostation_cost'),
-            'Message_Cancel' => $orderasignada->get('message_cancel'),
+            'Codigo' => $orderasignada->code,
+            'Nombre Remitente' => $orderasignada->name_r,
+            'Dirección Remitente' => $orderasignada->address_r,
+            'Móvil Remitente' => $orderasignada->cell_r,
+            'Teléfono Remitente' => $orderasignada->phone_r,
+            'Localidad Remitente' => $localityR->name,
+            'Nombre Destinatario' => $orderasignada->name_d,
+            'Dirección Destinatario' => $orderasignada->address_d,
+            'Móvil Destinatario' => $orderasignada->cell_d,
+            'Localidad Destinatario' => $localityD->name,
+            'Detalles Objeto' => $orderasignada->object_details,
+            'Peso' => $orderasignada->weigth,
+            'Mensaje' => $orderasignada->message,
+            'Costo de Transportacion' => $costDelivery->tranpostation_cost,
+            'Message_Cancel' => $orderasignada->message_cancel,
 
         ];
 
-          if($orderasignada->state == 'asignada'){
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailMessengerExpress($title, $customer_details,$order_details));
-            if (empty($sendmail)) {
-              return response()->json(['message'
-              => 'Mail Sent Sucssfully'], 200);
-              }else{
-                  return response()->json(['message' => 'Mail Sent fail'], 400);
-                 }
+        switch ($orderasignada->state) {
+            case 'asignada':
+             $title = 'Le ha sido asignada una nueva orden';
 
-          }if($orderasignada->state == 'cancelada'){
-            $sendmail = Mail::to($customer_details['email'])
-            ->send(new SendMailOrderCancelExpress($title, $customer_details,$order_details));
-            if (empty($sendmail)) {
+              $sendmail = Mail::to($customer_details['email'])
+              ->send(new SendMailMessengerExpress($title, $customer_details,$order_details));
+              if (empty($sendmail)) {
               return response()->json(['message'
               => 'Mail Sent Sucssfully'], 200);
               }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
-          }
-          else{
-            $sendmail = Mail::to($customer_details['email'])
+                break;
+
+            case 'cancelada':
+                $title = 'Orden Cancelada';
+
+                $sendmail = Mail::to($customer_details['email'])
+                ->send(new SendMailOrderCancelExpress($title, $customer_details,$order_details));
+                if (empty($sendmail)) {
+                  return response()->json(['message'
+                  => 'Mail Sent Sucssfully'], 200);
+                  }else{
+                      return response()->json(['message' => 'Mail Sent fail'], 400);
+                     }
+                break;
+        }
+
+    }
+
+    public function sendEmailReasigned($order,$mesengerOld){
+
+        $title = 'Orden Reasignada';
+        $orderasignada = OrdersExpress::findOrFail($order->id);
+        $mesengerOld = Messenger::findOrFail($order->messenger_id);
+        $email_mensajero = DB::select('select users.email from users where users.id = ?',[$mesengerOld->user_id]);
+        $email = $email_mensajero[0]->email;
+
+        $customer_details = [
+            'name' => $mesengerOld->name,
+            'email' => $email
+            ];
+        $order_details = [
+             'Codigo' => $orderasignada->code
+        ];
+
+        $sendmail = Mail::to($customer_details['email'])
             ->send(new SendMailMessengerReasigned($title, $customer_details,$order_details));
             if (empty($sendmail)) {
               return response()->json(['message'
@@ -356,8 +392,6 @@ class OrderExpressController extends ApiResponseController
               }else{
                   return response()->json(['message' => 'Mail Sent fail'], 400);
                  }
-          }
-
     }
 
     /**

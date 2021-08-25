@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMessengerPost;
 use App\Http\Controllers\api\ApiResponseController;
+use App\OrdersLoquesea;
 use App\OrdersMototaxi;
 
 class MessengerController extends ApiResponseController
@@ -87,7 +88,23 @@ class MessengerController extends ApiResponseController
         ->whereNull('messengers.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'Orders retrieved successfully.']);
+        $ordersLoquesea = OrdersLoquesea::
+        join('messengers', 'messengers.id', '=', 'orders_loqueseas.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_loqueseas.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_loqueseas.delivery_cost_id')
+        ->join('localities', 'localities.id', '=', 'orders_loqueseas.locality_id_d')
+        ->select('orders_loqueseas.id as order','orders_loqueseas.code','orders_loqueseas.from','orders_loqueseas.to',
+        'orders_loqueseas.phone','orders_loqueseas.pedido','orders_loqueseas.state','orders_loqueseas.message','localities.name',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','messengers.id as messenger_id')
+        ->orderBy('orders_loqueseas.created_at', 'desc')
+        ->where('orders_loqueseas.messenger_id',[$messengerId])
+        ->where('orders_loqueseas.state','asignada')
+        ->whereNull('orders_loqueseas.deleted_at')
+        ->whereNull('messengers.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders_loquesea'=>$ordersLoquesea,'message'=>'Orders retrieved successfully.']);
     }
 
     public function ordersFinished(Request $request){
@@ -155,7 +172,26 @@ class MessengerController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
+        $ordersLoquesea = OrdersLoquesea::
+        join('messengers', 'messengers.id', '=', 'orders_loqueseas.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_loqueseas.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_loqueseas.delivery_cost_id')
+        ->join('localities', 'localities.id', '=', 'orders_loqueseas.locality_id_d')
+        ->select('orders_loqueseas.id as order','orders_loqueseas.code','orders_loqueseas.from','orders_loqueseas.to',
+        'orders_loqueseas.phone','orders_loqueseas.pedido','orders_loqueseas.state','orders_loqueseas.message','localities.name',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','messengers.id as messenger_id')
+        ->where([
+            ['orders_loqueseas.messenger_id', '=', [$messengerId]],
+            ['orders_loqueseas.state','=','cancelada'],
+        ])->orWhere([
+            ['orders_loqueseas.messenger_id', '=', [$messengerId]],
+            ['orders_loqueseas.state','=','entregada']
+        ])
+        ->whereNull('orders_loqueseas.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders_loquesea'=>$ordersLoquesea,'message'=>'orders retrieved successfully.']);
     }
 
     public function ordersActive(Request $request){
@@ -208,7 +244,21 @@ class MessengerController extends ApiResponseController
         ->whereNull('orders_mototaxis.deleted_at')
         ->get();
 
-        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'message'=>'orders retrieved successfully.']);
+        $ordersLoquesea = OrdersLoquesea::
+        join('messengers', 'messengers.id', '=', 'orders_loqueseas.messenger_id')
+        ->join('users', 'users.id', '=', 'orders_loqueseas.user_id')
+        ->join('rols', 'users.rol_id', '=', 'rols.id')
+        ->join('deliveries_costs', 'deliveries_costs.id', '=', 'orders_loqueseas.delivery_cost_id')
+        ->join('localities', 'localities.id', '=', 'orders_loqueseas.locality_id_d')
+        ->select('orders_loqueseas.id as order','orders_loqueseas.code','orders_loqueseas.from','orders_loqueseas.to',
+        'orders_loqueseas.phone','orders_loqueseas.pedido','orders_loqueseas.state','orders_loqueseas.message','localities.name',
+        'deliveries_costs.tranpostation_cost','users.id as user','users.name','users.email','messengers.id as messenger_id')
+        ->where('orders_loqueseas.messenger_id',[$messengerId])
+        ->where('orders_loqueseas.state','=','en_progreso')
+        ->whereNull('orders_loqueseas.deleted_at')
+        ->get();
+
+        return $this->successResponse(['orders'=>$orders,'orders_express'=>$ordersExpress,'orders_mototaxi'=>$ordersMototaxi,'orders_loquesea'=>$ordersLoquesea,'message'=>'orders retrieved successfully.']);
     }
 
     /**
@@ -238,7 +288,6 @@ class MessengerController extends ApiResponseController
            $messenger->surname = $request['surname'];
            $messenger->ci = $request['ci'];
            $messenger->phone = $request['phone'];
-           $messenger->email = $request['email'];
            $messenger->address = $request['address'];
            $messenger->vehicle_registration = $request['vehicle_registration'];
            $messenger->user_id = $user_id;
@@ -306,7 +355,6 @@ class MessengerController extends ApiResponseController
         $messenger->surname = $request['surname'];
         $messenger->ci = $request['ci'];
         $messenger->phone = $request['phone'];
-        $messenger->email = $request['email'];
         $messenger->address = $request['address'];
         $messenger->vehicle_registration = $request['vehicle_registration'];
         $messenger->user_id = $request['user_id'];

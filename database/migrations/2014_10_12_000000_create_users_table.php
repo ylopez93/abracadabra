@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->enum('active', ['active', 'desactive'])->default('desactive');
             $table->string('confirmation_code')->nullable();
+            $table->string('code_reset_password')->nullable();
             $table->boolean('confirmed')->default(0);
             $table->rememberToken();
             $table->timestamps();

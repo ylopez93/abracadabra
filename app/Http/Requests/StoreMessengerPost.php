@@ -29,7 +29,6 @@ class StoreMessengerPost extends FormRequest
             'surname'=> 'required|string|max:255',
             'ci'=> 'required|string|max:11',
             'phone'=> 'required|string|max:255',
-            'email'=> 'required|string|max:255',
             'address'=> 'required|string|max:255',
 
         ];
