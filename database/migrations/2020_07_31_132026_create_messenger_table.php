@@ -13,7 +13,7 @@ class CreateMessengerTable extends Migration
      */
     public function up()
     {
-        Schema::create('messenger', function (Blueprint $table) {
+        Schema::create('messengers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('surname');
@@ -35,6 +35,6 @@ class CreateMessengerTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('messenger');
+        Schema::dropIfExists('messengers');
     }
 }

@@ -32,7 +32,6 @@ class StoreOrderPost extends FormRequest
         'pickup_time_from' => 'required',
         'pickup_time_to' => 'required',
         'message'=> 'required|max:255',
-
         ];
 
 

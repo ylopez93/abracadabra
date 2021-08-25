@@ -21,13 +21,8 @@ class ProductController extends ApiResponseController
     public function index()
     {
         //para que el join devuelva todos los productos ninguno de los campos relacionados en tablas externas debe ser null
-        $products = Product::
-        join('product_categories','product_categories.id','=','products.product_category_id')->
-        join('product_images','product_images.product_image_id','=','products.id')->
-        select('products.*','product_categories.id as product_category_id','product_categories.name as category','product_images.name as image')->
-        orderBy('products.created_at','desc')->paginate(10);
-        return $this->successResponse([$products,'Products retrieved successfully.']);
-
+        $products = Product::join('product_categories', 'product_categories.id', '=', 'products.product_category_id')->join('product_images', 'product_images.product_image_id', '=', 'products.id')->select('products.*', 'product_categories.id as product_category_id', 'product_categories.name as category', 'product_images.name as image')->orderBy('products.created_at', 'desc')->paginate(10);
+        return $this->successResponse(['products' => $products, 'message' => 'Products retrieved successfully.']);
     }
 
     /**
@@ -49,33 +44,29 @@ class ProductController extends ApiResponseController
     public function store(Request $request)
     {
 
-            $v_product = new StoreProductPost();
-            $validator = $request->validate($v_product->rules());
-            if($validator){
-               $product = new Product();
-               $product->name = $request['name'];
-               $product->description = $request['description'];
-               $product->stock = $request['stock'];
-               $product->price = $request['price'];
-               $product->discount_percent = $request['discount_percent'];
-               $product->state = 'published';
-               $product->product_category_id = $request['product_category_id'];
-               $product->save();
+        $v_product = new StoreProductPost();
+        $validator = $request->validate($v_product->rules());
+        if ($validator) {
+            $product = new Product();
+            $product->name = $request['name'];
+            $product->description = $request['description'];
+            $product->stock = $request['stock'];
+            $product->price = $request['price'];
+            $product->discount_percent = $request['discount_percent'];
+            $product->state = $request['state'];
+            $product->product_category_id = $request['product_category_id'];
+            $product->save();
 
-               $filename = time() .".". $request->image->extension();
-               $request->image->move(public_path('images'),$filename);
-               $productimage = new ProductImage();
-               $productimage->name = $filename;
-               $productimage->product_image_id = $product->id;
-               $productimage->save();
+            $filename = time() . "." . $request->image->extension();
+            $request->image->move(public_path('images'), $filename);
+            $productimage = new ProductImage();
+            $productimage->name = $filename;
+            $productimage->product_image_id = $product->id;
+            $productimage->save();
 
-            return $this->successResponse([ 'data'=>$product,'image' => $productimage,'message' =>'Product created successfully.']);
-
-            }
-            return $this->successResponse(['message' => 'Error al validar']);
-
-
-
+            return $this->successResponse(['data' => $product, 'image' => $productimage, 'message' => 'Product created successfully.']);
+        }
+        return $this->successResponse(['message' => 'Error al validar']);
     }
 
     /**
@@ -88,19 +79,18 @@ class ProductController extends ApiResponseController
     {
         $product = Product::find($id);
 
-        if(is_null($product)){
-            return $this->successResponse('Product not found.');
+        if (is_null($product)) {
+            return $this->successResponse(['message' => 'Product not found.']);
         }
 
-        return $this->successResponse([$product,'Product retrieved successfully.']);
-
+        return $this->successResponse(['product' => $product, 'message' => 'Product retrieved successfully.']);
     }
 
 
     public function categoryProduct(ProductCategory $category)
     {
 
-        return $this->successResponse(["category"=> $category,"product"=> $category->product()->paginate(10)]);
+        return $this->successResponse(["category" => $category, "product" => $category->product()->paginate(10)]);
     }
 
     /**
@@ -112,7 +102,7 @@ class ProductController extends ApiResponseController
     public function edit($id)
     {
         //
-     }
+    }
 
     /**
      * Update the specified resource in storage.
@@ -125,34 +115,30 @@ class ProductController extends ApiResponseController
     {
         $v_product = new StoreProductPost();
         $validator = $request->validate($v_product->rules());
-        if($validator){
-        $product->name = $request['name'];
-        $product->description = $request['description'];
-        $product->stock = $request['stock'];
-        $product->price = $request['price'];
-        $product->discount_percent = $request['discount_percent'];
-        $product->state = $request['state'];
-        $product->product_category_id = $request['product_category_id'];
-        $product->save();
+        if ($validator) {
+            $product->name = $request['name'];
+            $product->description = $request['description'];
+            $product->stock = $request['stock'];
+            $product->price = $request['price'];
+            $product->discount_percent = $request['discount_percent'];
+            $product->state = $request['state'];
+            $product->product_category_id = $request['product_category_id'];
+            $product->save();
 
-        $productimage = ProductImage::select('select * from product_images where product_images.product_image_id = ?', [$product->id]);
+            $productimage = ProductImage::select('select * from product_images where product_images.product_image_id = ?', [$product->id]);
 
-        if ($request->hasFile('image')) {
+            if ($request->hasFile('image')) {
 
-            $filename  = time() .".". $request->image->extension();
-            $request->image->move(public_path('images'),$filename);
-            $productimage->name = $filename;
-            $productimage->product_image_id = $request['id'];
-            $productimage = DB::update('update product_images set name = ?, product_image_id = ? where product_image_id = ?', [$filename,$request['id'],$product->id]);
+                $filename  = time() . "." . $request->image->extension();
+                $request->image->move(public_path('images'), $filename);
+                $productimage->name = $filename;
+                $productimage->product_image_id = $request['id'];
+                $productimage = DB::update('update product_images set name = ?, product_image_id = ? where product_image_id = ?', [$filename, $request['id'], $product->id]);
+            }
 
-
-        }
-
-        return $this->successResponse([$product, 'Product updated successfully.']);
+            return $this->successResponse(['product' => $product, 'message' => 'Product updated successfully.']);
         }
         return $this->successResponse(['message' => 'Error al validar']);
-
-
     }
 
     /**
@@ -164,12 +150,19 @@ class ProductController extends ApiResponseController
     public function destroy(Product $product)
     {
         $product->delete();
-        return $this->successResponse('Product deleted successfully.');
+        return $this->successResponse(['message' => 'Product deleted successfully.']);
     }
 
 
-
-
-
-
+    public function buscador(Request $request)
+    {
+        $products = Product::join('product_categories', 'product_categories.id', '=', 'products.product_category_id')
+            ->select('products.*', 'product_categories.module as modulo')
+            ->where("name", 'like', $request->text . "%")
+            ->where("state", "published")
+            ->whereNull("deleted_at")
+            ->take(10)->get();
+        return $this->successResponse(['product' => $products, 'message' => 'find successfully.']);
+    }
 }
+.

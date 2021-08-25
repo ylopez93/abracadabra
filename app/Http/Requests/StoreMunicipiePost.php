@@ -24,7 +24,8 @@ class StoreMunicipiePost extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255|unique:municipies,name',
+            'name' => 'required|string|max:255',
+            'price'=> 'required',
             'province_id'=> 'required'
         ];
     }

@@ -6,8 +6,9 @@ use App\Province;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProvincePost;
+use App\Http\Controllers\api\ApiResponseController;
 
-class ProvinceController extends Controller
+class ProvinceController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.
@@ -17,7 +18,7 @@ class ProvinceController extends Controller
     public function index()
     {
         $provinces = Province::all();
-        return $this->successResponse([$provinces,'Province retrieved successfully.']);
+        return $this->successResponse(['provinces'=>$provinces,'message'=>'Province retrieved successfully.']);
     }
 
     public function provincesMunicipies(Province $province)
@@ -53,12 +54,10 @@ class ProvinceController extends Controller
            $province->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$province, 'Province created successfully.']);
+        return $this->successResponse(['province'=>$province,'message'=> 'Province created successfully.']);
 
         }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -72,10 +71,10 @@ class ProvinceController extends Controller
         $province = Province::find($id);
 
         if(is_null($province)){
-            return $this->successResponse('Province  not found.');
+            return $this->successResponse(['message'=>'Province  not found.']);
         }
 
-        return $this->successResponse([$province,'Province retrieved successfully.']);
+        return $this->successResponse(['province'=>$province,'message'=>'Province retrieved successfully.']);
     }
 
     /**
@@ -105,10 +104,10 @@ class ProvinceController extends Controller
             $province->name = $request['name'];
             $province->country_id = $request['country_id'];
             $province->save();
+
+            return $this->successResponse([$province,'message'=> 'Province update successfully.']);
         }
-        return response()->json([
-            'message' => 'Error al validar'
-        ], 201);
+        return $this->successResponse(['message'=>'Error al validar']);
     }
 
     /**
@@ -120,6 +119,6 @@ class ProvinceController extends Controller
     public function destroy(Province $province)
     {
         $province->delete();
-        return $this->successResponse('Province deleted successfully.');
+        return $this->successResponse(['message'=>'Province deleted successfully.']);
     }
 }

@@ -3,6 +3,11 @@
 namespace App;
 
 use App\User;
+use App\Locality;
+use App\Location;
+use App\Messenger;
+use App\OrderProduct;
+use App\DeliveriesCost;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -29,7 +34,10 @@ class Order extends Model
         'delivery_type',
         'messenger_id',
         'user_id',
-        'transportation_cost'
+        'locality_id',
+        'delivery_cost_id',
+        'message_cancel'
+
     ];
 
     protected $hidden = ['created_at','updated_at'];
@@ -47,6 +55,21 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function locality()
+    {
+        return $this->belongsTo(Locality::class);
+    }
+
+    public function delivery()
+    {
+        return $this->belongsTo(DeliveriesCost::class);
+    }
+
+    public function locations()
+    {
+        return $this->hasMany(Location::class);
     }
 
 }

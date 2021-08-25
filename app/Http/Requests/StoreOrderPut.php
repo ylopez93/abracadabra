@@ -25,13 +25,13 @@ class StoreOrderPut extends FormRequest
     {
         return [
 
-        'delivery_time_to'=> 'required',
-        'delivery_time_from'=> 'required',
-        'pickup_date' => 'required|date',
+        //'delivery_time_to'=> 'required',
+        //'delivery_time_from'=> 'required',
+        //'pickup_date' => 'required|date',
         'state'=> 'required',
         //'payment_state'=> 'required',
-        'messenger_id' => 'required',
-        'transportation_cost' => 'required',
+        //'messenger_id' => 'required',
+        //'delivery_cost_id' => 'required',
 
         ];
     }

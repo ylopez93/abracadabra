@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\api\ApiResponseController;
 
-class ProductImageController extends Controller
+class ProductImageController extends ApiResponseController
 {
     /**
      * Display a listing of the resource.

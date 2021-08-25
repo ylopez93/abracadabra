@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\api;
 
+
 use App\Contact;
 use Illuminate\Http\Request;
+use App\Mail\SendMailFormContact;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\ApiResponseController;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreContactPost;
+use App\Http\Controllers\api\ApiResponseController;
 
 class ContactController extends ApiResponseController
 {
@@ -18,7 +21,7 @@ class ContactController extends ApiResponseController
     public function index()
     {
         $contacts = Contact::all();
-        return $this->successResponse([$contacts,'Messengers retrieved successfully.']);
+        return $this->successResponse(['contacts'=>$contacts,'message'=>'Messengers retrieved successfully.']);
     }
 
     /**
@@ -48,10 +51,14 @@ class ContactController extends ApiResponseController
            $contacts->phone = $request['phone'];
            $contacts->movil_phone = $request['movil_phone'];
            $contacts->description = $request['description'];
+           $contacts->latitude = $request['latitude'];
+           $contacts->longitude = $request['longitude'];
+           $contacts->price_first_km = $request['price_first_km'];
+           $contacts->price_km = $request['price_km'];
            $contacts->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$contacts, 'Contact created successfully.']);
+        return $this->successResponse(['contacts'=>$contacts,'message'=> 'Contact created successfully.']);
 
         }
         return response()->json([
@@ -70,10 +77,10 @@ class ContactController extends ApiResponseController
         $contact = Contact::find($id);
 
         if(is_null($contact)){
-            return $this->successResponse('Contact  not found.');
+            return $this->successResponse(['message'=>'Contact  not found.']);
         }
 
-        return $this->successResponse([$contact,'Contact retrieved successfully.']);
+        return $this->successResponse(['contact'=>$contact,'message'=>'Contact retrieved successfully.']);
     }
 
     /**
@@ -104,8 +111,12 @@ class ContactController extends ApiResponseController
         $contact->phone = $request['phone'];
         $contact->movil_phone = $request['movil_phone'];
         $contact->description = $request['description'];
+        $contact->latitude = $request['latitude'];
+        $contact->longitude = $request['longitude'];
+        $contact->price_first_km = $request['price_first_km'];
+        $contact->price_km = $request['price_km'];
         $contact->save();
-        return $this->successResponse([$contact, 'Contact updated successfully.']);
+        return $this->successResponse(['contact'=>$contact,'message'=> 'Contact updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -121,6 +132,27 @@ class ContactController extends ApiResponseController
     public function destroy(Contact $contact)
     {
         $contact->delete();
-        return $this->successResponse('Contact deleted successfully.');
+        return $this->successResponse(['message'=>'Contact deleted successfully.']);
+    }
+
+
+    //Mensaje de Contacto para enviar quejas o preguntas...
+
+    public function SendMailFormContact(Request $request){
+
+        $title = 'Quejas o inquietudes Abracadabra!!!';
+        $customer_details = [
+        'name' => $request['nombre'],
+        'email' => $request['email'],
+        'mensaje' => $request['mensaje'],
+        ];
+           $sendmail = Mail::to("abracadabra.tlscu@gmail.com")
+           ->send(new SendMailFormContact($title,$customer_details));
+           if (empty($sendmail)) {
+             return response()->json(['message'
+             => 'Mail Sent Sucssfully'], 200);
+             }else{
+                 return response()->json(['message' => 'Mail Sent fail'], 400);
+                }
     }
 }

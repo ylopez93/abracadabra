@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Rol;
+use App\Messenger;
 use App\Municipie;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use Notifiable;
 
@@ -24,7 +25,7 @@ class User extends Authenticatable implements JWTSubject
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'name', 'email', 'password','rol_id'
+        'name', 'email', 'password','rol_id','active'
     ];
 
 
@@ -34,7 +35,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token','created_at','updated_at'
+        'password', 'remember_token','confirmation_code','code_reset_password','created_at','updated_at'
     ];
 
 
@@ -78,12 +79,12 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Rol::class);
     }
 
-    public function municipio()
-    {
-        return $this->belongsTo(Municipie::class);
-    }
-
     public function userProduct(){
         return $this->hasMany(UserProduct::class);
+    }
+
+    public function messenger()
+    {
+        return $this->hasOne(Messenger::class);
     }
 }

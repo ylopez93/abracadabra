@@ -78,38 +78,6 @@
                     @endauth
                 </div>
             @endif
-
-            <div class="container">
-                <div class="row">
-                    <div class="col-sn-3 bg-light" >
-                        @if (count(Cart::getContent()))
-
-                        <a href="{{route('cart.checkout')}}">VER CARRITO: <span class="badge btn-danger">{{count(Cart::getContent())}}</span></a>
-                        @else
-                           <p>Carrito vacio</p>
-                        @endif
-
-                    </div>
-                    <div class="col-sn-10">
-
-                        @forelse ($products as $item)
-                            <div class="col-4 border p-5 nt-5 text-conter">
-                                <h1>{{$item->name}}</h1>
-                                <p>{{$item->price}}</p>
-
-                                <form action="{{route('cart.add')}}" method="post">
-                                    @csrf
-                                <input type="hidden" name="product_id" value="{{$item->id}}">
-                                <input type="submit" name="btn" class="btn btn-success" value="ADD TO CART">
-                                </form>
-
-                            </div>
-
-                         @empty
-                        @endforelse
-                    </div>
-                </div>
-            </div>
         </div>
     </body>
 </html>

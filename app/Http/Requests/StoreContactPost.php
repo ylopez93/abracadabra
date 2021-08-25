@@ -29,7 +29,11 @@ class StoreContactPost extends FormRequest
             'email'=> 'required|string|email|max:255',
             'phone'=> 'string',
             'phone'=> 'string',
-            'description'=> 'string|max:255',
+            'description'=> 'required|string',
+            'latitude'=> 'required',
+            'longitude'=> 'required',
+            'price_first_km'=> 'required',
+            'price_km'=> 'required'
 
         ];
     }

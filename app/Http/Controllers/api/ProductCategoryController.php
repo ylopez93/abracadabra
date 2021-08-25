@@ -19,7 +19,7 @@ class ProductCategoryController extends ApiResponseController
     public function index()
     {
         $productCategories = ProductCategory::all();
-        return $this->successResponse([$productCategories,'Products Categories retrieved successfully.']);
+        return $this->successResponse(['productCategories'=>$productCategories,'message'=>'Products Categories retrieved successfully.']);
     }
 
     public function categoryProduct(ProductCategory $category)
@@ -36,7 +36,7 @@ class ProductCategoryController extends ApiResponseController
         select('product_categories.id as category_id','product_categories.name as category',
         'product_categories.module','product_categories.image','products.*')->
         orderBy('product_categories.name','desc')->paginate(10);
-        return $this->successResponse([$categories,'Products retrieved successfully.']);
+        return $this->successResponse(['categories'=>$categories,'message'=>'Products retrieved successfully.']);
     }
 
 
@@ -44,7 +44,7 @@ class ProductCategoryController extends ApiResponseController
 
         $categories = DB::select('select * from product_categories where product_categories.module = ?', [$module]);
 
-        return $this->successResponse([$categories,' Categories retrieved successfully.']);
+        return $this->successResponse(['categories'=>$categories,'message'=>'Categories retrieved successfully.']);
     }
 
 
@@ -62,7 +62,7 @@ class ProductCategoryController extends ApiResponseController
                 ->whereNull('products.deleted_at')
                 ->get();
 
-        return $this->successResponse([$categoryProducts,'Products retrieved successfully.']);
+        return $this->successResponse(['categoryProducts'=>$categoryProducts,'message'=>'Products retrieved successfully.']);
     }
 
     /**
@@ -99,7 +99,7 @@ class ProductCategoryController extends ApiResponseController
 
            $productcategory->save();
 
-        return $this->successResponse([$productcategory, 'Product Category created successfully.']);
+        return $this->successResponse(['productcategory'=>$productcategory, 'message'=>'Product Category created successfully.']);
 
         }
         return response()->json([
@@ -120,10 +120,10 @@ class ProductCategoryController extends ApiResponseController
         $productcategory = ProductCategory::find($id);
 
         if(is_null($productcategory)){
-            return $this->successResponse('Product Category not found.');
+            return $this->successResponse(['message'=>'Product Category not found.']);
         }
 
-        return $this->successResponse([$productcategory,'ProductProduct Category retrieved successfully.']);
+        return $this->successResponse(['productcategory'=>$productcategory,'message'=>'ProductProduct Category retrieved successfully.']);
 
     }
 
@@ -162,7 +162,7 @@ class ProductCategoryController extends ApiResponseController
 
         $category->save();
 
-        return $this->successResponse([$category, 'Product Category updated successfully.']);
+        return $this->successResponse(['category'=>$category,'message'=> 'Product Category updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -179,6 +179,6 @@ class ProductCategoryController extends ApiResponseController
     public function destroy( ProductCategory $category)
     {
         $category->delete();
-        return $this->successResponse('Product Category deleted successfully.');
+        return $this->successResponse(['message'=>'Product Category deleted successfully.']);
     }
 }

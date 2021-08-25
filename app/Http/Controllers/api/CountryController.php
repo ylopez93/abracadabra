@@ -18,7 +18,7 @@ class CountryController extends ApiResponseController
     public function index()
     {
         $countries = Country::all();
-        return $this->successResponse([$countries,'Country retrieved successfully.']);
+        return $this->successResponse(['countries'=>$countries,'message'=>'Country retrieved successfully.']);
     }
 
     public function countryPorvinces(Country $country)
@@ -52,7 +52,7 @@ class CountryController extends ApiResponseController
            $country->save();
 
         // $product = Product::create($request);
-        return $this->successResponse([$country, 'Country created successfully.']);
+        return $this->successResponse(['country'=>$country, 'message'=>'Country created successfully.']);
 
         }
         return response()->json([
@@ -74,7 +74,7 @@ class CountryController extends ApiResponseController
             return $this->successResponse('Country  not found.');
         }
 
-        return $this->successResponse([$country,'Country retrieved successfully.']);
+        return $this->successResponse(['country'=>$country,'message'=>'Country retrieved successfully.']);
     }
 
     /**
@@ -102,7 +102,7 @@ class CountryController extends ApiResponseController
         if($validator){
         $country->name = $request['name'];
         $country->save();
-        return $this->successResponse([$country, 'Country updated successfully.']);
+        return $this->successResponse(['country'=>$country,'message'=> 'Country updated successfully.']);
         }
         return response()->json([
             'message' => 'Error al validar'
@@ -118,6 +118,6 @@ class CountryController extends ApiResponseController
     public function destroy(Country $country)
     {
         $country->delete();
-        return $this->successResponse('Country deleted successfully.');
+        return $this->successResponse(['message'=>'Country deleted successfully.']);
     }
 }
